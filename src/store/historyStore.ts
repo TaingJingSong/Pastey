@@ -1,13 +1,12 @@
 import { create } from 'zustand';
-import { ClipboardMonitor } from '../native/ClipboardMonitor';
-import type { ClipboardPayload } from '../native/ClipboardMonitor';
+import { ClipboardMonitor, ClipboardPayload } from '../native/ClipboardMonitor';
 import {
+  ClipItem,
   deleteClip,
   insertClip,
   listClips,
   togglePin,
 } from '../db/queries';
-import type { ClipItem } from '../db/queries';
 import { initSchema } from '../db/schema';
 
 interface HistoryState {
@@ -21,46 +20,26 @@ interface HistoryState {
 }
 
 let subscription: { remove: () => void } | null = null;
-let initialization: Promise<void> | null = null;
+let starting = false;
 
 export const useHistoryStore = create<HistoryState>((set, get) => ({
   items: [],
   ready: false,
 
   init: async () => {
-    if (get().ready) {
+    if (get().ready || starting) {
       return;
     }
+    starting = true;
 
-    if (initialization) {
-      return initialization;
-    }
+    await initSchema();
+    set({ ready: true });
+    await get().refresh();
 
-    initialization = (async () => {
-      await initSchema();
-      await get().refresh();
-
-      subscription = ClipboardMonitor.subscribe(payload => {
-        get().onClipboard(payload).catch(error => {
-          console.error('Failed to save clipboard item:', error);
-        });
-      });
-
-      try {
-        await ClipboardMonitor.start();
-        set({ ready: true });
-      } catch (error) {
-        subscription?.remove();
-        subscription = null;
-        throw error;
-      }
-    })();
-
-    try {
-      await initialization;
-    } finally {
-      initialization = null;
-    }
+    ClipboardMonitor.start();
+    subscription = ClipboardMonitor.subscribe(payload => {
+      get().onClipboard(payload);
+    });
   },
 
   refresh: async () => {
@@ -84,9 +63,8 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
   },
 }));
 
-export function disposeHistory(): void {
+export function disposeHistory() {
   subscription?.remove();
   subscription = null;
   ClipboardMonitor.stop();
-  useHistoryStore.setState({ ready: false });
 }

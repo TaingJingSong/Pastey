@@ -1,4 +1,4 @@
-import { db } from './schema';
+import { sqlite } from '../native/PasteySQLite';
 
 export interface ClipItem {
   id: number;
@@ -10,19 +10,15 @@ export interface ClipItem {
   pinned: number;
 }
 
-export interface InsertClipPayload {
+export async function insertClip(payload: {
   hash: string;
   type: 'text' | 'image';
   preview: string;
   content: string;
   filePath?: string;
   createdAt: number;
-}
-
-export async function insertClip(
-  payload: InsertClipPayload,
-): Promise<void> {
-  const result = await db.execute(
+}) {
+  const rows = await sqlite.execute<{ id: number }>(
     `INSERT INTO items (hash, type, preview, file_path, created_at)
      VALUES (?, ?, ?, ?, ?)
      ON CONFLICT(hash) DO UPDATE SET created_at = excluded.created_at
@@ -33,26 +29,24 @@ export async function insertClip(
       payload.preview,
       payload.filePath ?? null,
       payload.createdAt,
-    ],
+    ]
   );
 
-  const id = result.rows?.[0]?.id as number | undefined;
+  const id = rows[0]?.id;
 
   if (id !== undefined && payload.type === 'text') {
-    await db.execute(
+    await sqlite.execute(
       `INSERT INTO content (item_id, full_text)
-       VALUES (?, ?)
-       ON CONFLICT(item_id) DO UPDATE SET full_text = excluded.full_text`,
+      VALUES (?, ?)
+      ON CONFLICT(item_id)
+      DO UPDATE SET full_text = excluded.full_text`,
       [id, payload.content],
     );
   }
 }
 
-export async function listClips(
-  limit = 100,
-  offset = 0,
-): Promise<ClipItem[]> {
-  const result = await db.execute(
+export async function listClips(limit = 100, offset = 0): Promise<ClipItem[]> {
+  return sqlite.execute<ClipItem>(
     `SELECT id, hash, type, preview,
             file_path AS filePath,
             created_at AS createdAt,
@@ -60,48 +54,26 @@ export async function listClips(
      FROM items
      ORDER BY pinned DESC, created_at DESC
      LIMIT ? OFFSET ?`,
-    [limit, offset],
+    [limit, offset]
   );
-
-  return (result.rows ?? []).map((row): ClipItem => {
-    if (row.type !== 'text' && row.type !== 'image') {
-      throw new Error(`Invalid clip type: ${String(row.type)}`);
-    }
-
-    return {
-      id: Number(row.id),
-      hash: String(row.hash),
-      type: row.type,
-      preview: String(row.preview),
-      filePath: row.filePath == null ? null : String(row.filePath),
-      createdAt: Number(row.createdAt),
-      pinned: Number(row.pinned),
-    };
-  });
 }
 
 export async function getContent(id: number): Promise<string | null> {
-  const result = await db.execute(
-    `SELECT full_text AS fullText
-     FROM content
-     WHERE item_id = ?`,
-    [id],
+  const rows = await sqlite.execute<{ fullText: string }>(
+    'SELECT full_text AS fullText FROM content WHERE item_id = ?',
+    [id]
   );
-
-  return (result.rows?.[0]?.fullText as string | undefined) ?? null;
+  return rows[0]?.fullText ?? null;
 }
 
-export async function togglePin(id: number): Promise<void> {
-  await db.execute(
-    'UPDATE items SET pinned = 1 - pinned WHERE id = ?'
-    [id],
-  );
+export async function togglePin(id: number) {
+  await sqlite.execute('UPDATE items SET pinned = 1 - pinned WHERE id = ?', [id]);
 }
 
-export async function deleteClip(id: number): Promise<void> {
-  await db.execute('DELETE FROM items WHERE id = ?', [id]);
+export async function deleteClip(id: number) {
+  await sqlite.execute('DELETE FROM items WHERE id = ?', [id]);
 }
 
-export async function clearAll(): Promise<void> {
-  await db.execute('DELETE FROM items');
+export async function clearAll() {
+  await sqlite.execute('DELETE FROM items');
 }

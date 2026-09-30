@@ -1,33 +1,55 @@
-import { open } from '@op-engineering/op-sqlite';
+import { sqlite } from '../native/PasteySQLite';
 
-export const db = open({ name: 'pastey.db' });
+export const db = sqlite;
+
+let initialized = false;
+let initialization: Promise<void> | null = null;
 
 export async function initSchema(): Promise<void> {
-  await db.execute('PRAGMA journal_mode = WAL');
-  await db.execute('PRAGMA foreign_keys = ON');
+  console.log('[db] initSchema start');
+  if (initialized) {
+    return;
+  }
+  if (initialization) {
+    return initialization;
+  }
 
-  await db.execute(`
-    CREATE TABLE IF NOT EXISTS items (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      hash TEXT UNIQUE NOT NULL,
-      type TEXT NOT NULL,
-      preview TEXT NOT NULL,
-      file_path TEXT,
-      created_at INTEGER NOT NULL,
-      pinned INTEGER NOT NULL DEFAULT 0
-    )
-  `);
+  initialization = (async () => {
+    await db.open('pastey.db');
 
-  await db.execute(`
-    CREATE INDEX IF NOT EXISTS idx_items_created
-    ON items(pinned DESC, created_at DESC)
-  `);
+    await db.execute('PRAGMA foreign_keys = ON');
 
-  await db.execute(`
-    CREATE TABLE IF NOT EXISTS content (
-      item_id INTEGER PRIMARY KEY
-        REFERENCES items(id) ON DELETE CASCADE,
-      full_text TEXT
-    )
-  `);
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS items (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        hash TEXT UNIQUE NOT NULL,
+        type TEXT NOT NULL,
+        preview TEXT NOT NULL,
+        file_path TEXT,
+        created_at INTEGER NOT NULL,
+        pinned INTEGER NOT NULL DEFAULT 0
+      )
+    `);
+
+    await db.execute(`
+      CREATE INDEX IF NOT EXISTS idx_items_created
+      ON items(pinned DESC, created_at DESC)
+    `);
+
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS content (
+        item_id INTEGER PRIMARY KEY
+          REFERENCES items(id) ON DELETE CASCADE,
+        full_text TEXT
+      )
+    `);
+
+    initialized = true;
+  })();
+
+  try {
+    await initialization;
+  } finally {
+    initialization = null;
+  }
 }

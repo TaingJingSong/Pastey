@@ -14,6 +14,9 @@
 		514201582437B4B40078DB4F /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 514201572437B4B40078DB4F /* main.m */; };
 		520627CF306CCCAB008EDE67 /* ClipboardMonitor.m in Sources */ = {isa = PBXBuildFile; fileRef = 520627CD306CCCAB008EDE67 /* ClipboardMonitor.m */; };
 		520627D0306CCCAB008EDE67 /* ClipboardMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 520627CE306CCCAB008EDE67 /* ClipboardMonitor.swift */; };
+		52891D5A306CF0B900A83237 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 52891D59306CF0B900A83237 /* libsqlite3.tbd */; };
+		52891D5D306CF11200A83237 /* PasteySQLite.m in Sources */ = {isa = PBXBuildFile; fileRef = 52891D5B306CF11200A83237 /* PasteySQLite.m */; };
+		52891D5E306CF11200A83237 /* PasteySQLite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52891D5C306CF11200A83237 /* PasteySQLite.swift */; };
 		52E2353B306CC6920025259A /* PasteyModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 52E23539306CC6920025259A /* PasteyModule.m */; };
 		52E2353C306CC6920025259A /* PasteyModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52E2353A306CC6920025259A /* PasteyModule.swift */; };
 		537BE2C8BF4D0F241234666A /* libPods-Pastey-macOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EA4C605595D9306B025162B4 /* libPods-Pastey-macOS.a */; };
@@ -33,6 +36,9 @@
 		514201592437B4B40078DB4F /* Pastey.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Pastey.entitlements; sourceTree = "<group>"; };
 		520627CD306CCCAB008EDE67 /* ClipboardMonitor.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ClipboardMonitor.m; sourceTree = "<group>"; };
 		520627CE306CCCAB008EDE67 /* ClipboardMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardMonitor.swift; sourceTree = "<group>"; };
+		52891D59306CF0B900A83237 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk/usr/lib/libsqlite3.tbd; sourceTree = DEVELOPER_DIR; };
+		52891D5B306CF11200A83237 /* PasteySQLite.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PasteySQLite.m; sourceTree = "<group>"; };
+		52891D5C306CF11200A83237 /* PasteySQLite.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteySQLite.swift; sourceTree = "<group>"; };
 		52E23539306CC6920025259A /* PasteyModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PasteyModule.m; sourceTree = "<group>"; };
 		52E2353A306CC6920025259A /* PasteyModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteyModule.swift; sourceTree = "<group>"; };
 		52E2353D306CC69E0025259A /* Pastey-macOS-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Pastey-macOS-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -54,6 +60,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				52891D5A306CF0B900A83237 /* libsqlite3.tbd in Frameworks */,
 				537BE2C8BF4D0F241234666A /* libPods-Pastey-macOS.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -64,6 +71,7 @@
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				52891D59306CF0B900A83237 /* libsqlite3.tbd */,
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
 				EA4C605595D9306B025162B4 /* libPods-Pastey-macOS.a */,
 			);
@@ -73,6 +81,8 @@
 		5142014A2437B4B30078DB4F /* Pastey-macOS */ = {
 			isa = PBXGroup;
 			children = (
+				52891D5B306CF11200A83237 /* PasteySQLite.m */,
+				52891D5C306CF11200A83237 /* PasteySQLite.swift */,
 				520627CD306CCCAB008EDE67 /* ClipboardMonitor.m */,
 				520627CE306CCCAB008EDE67 /* ClipboardMonitor.swift */,
 				52E23539306CC6920025259A /* PasteyModule.m */,
@@ -327,6 +337,8 @@
 				5142014D2437B4B30078DB4F /* AppDelegate.mm in Sources */,
 				52E2353B306CC6920025259A /* PasteyModule.m in Sources */,
 				52E2353C306CC6920025259A /* PasteyModule.swift in Sources */,
+				52891D5D306CF11200A83237 /* PasteySQLite.m in Sources */,
+				52891D5E306CF11200A83237 /* PasteySQLite.swift in Sources */,
 				520627CF306CCCAB008EDE67 /* ClipboardMonitor.m in Sources */,
 				520627D0306CCCAB008EDE67 /* ClipboardMonitor.swift in Sources */,
 			);
@@ -492,10 +504,7 @@
 				);
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
@@ -551,10 +560,7 @@
 					"\"$(inherited)\"",
 				);
 				MTL_ENABLE_DEBUG_INFO = NO;
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = false;
