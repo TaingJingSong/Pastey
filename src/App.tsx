@@ -1,0 +1,31 @@
+import React, { useEffect } from 'react';
+import {
+  SafeAreaView,
+  Text,
+  StyleSheet,
+} from 'react-native';
+import { useHistoryStore } from './store/historyStore';
+import { HistoryList } from './components/HistoryList';
+
+function App(): React.JSX.Element {
+  const { items, init, toggle, remove } = useHistoryStore();
+
+  useEffect(() => {
+    init();
+  }, [init]);
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <Text style={styles.heading}>History ({items.length})</Text>
+      <HistoryList items={items} onSelect={toggle} onDelete={remove}/>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, padding: 24 },
+  heading: { fontSize: 18, fontWeight: '600', marginBottom: 12 },
+  item: { fontSize: 14, paddingVertical: 4, opacity: 0.8 },
+});
+
+export default App;

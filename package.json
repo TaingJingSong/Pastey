@@ -5,13 +5,21 @@
   "scripts": {
     "android": "react-native run-android",
     "ios": "react-native run-ios",
+    "macos": "react-native run-macos --mode Debug",
+    "macos:release": "react-native run-macos --mode Release",
+    "macos:pods": "cd macos && pod install",
+    "macos:xcode": "open macos/Pastey.xcworkspace",
     "lint": "eslint .",
     "start": "react-native start",
+    "start:reset": "react-native start --reset-cache",
     "test": "jest"
   },
   "dependencies": {
+    "@op-engineering/op-sqlite": "^18.2.5",
     "react": "18.3.1",
-    "react-native": "0.76.3"
+    "react-native": "0.76.3",
+    "react-native-macos": "^0.76.3",
+    "zustand": "^5.0.15"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
@@ -29,6 +37,7 @@
     "babel-jest": "^29.6.3",
     "eslint": "^8.19.0",
     "jest": "^29.6.3",
+    "patch-package": "^8.0.1",
     "prettier": "2.8.8",
     "react-test-renderer": "18.3.1",
     "typescript": "5.0.4"
