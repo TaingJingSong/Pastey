@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { AppWindow } from '../native/WindowModule';
 import { ClipboardMonitor, ClipboardPayload } from '../native/ClipboardMonitor';
 import {
   ClipItem,
@@ -86,6 +87,8 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
       content,
       filePath: item.filePath ?? undefined,
     });
+
+    await AppWindow.hide();
   },
 }));
 

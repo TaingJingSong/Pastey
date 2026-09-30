@@ -1,5 +1,6 @@
 import AppKit
 import Foundation
+import CryptoKit
 
 @objc(ClipboardMonitor)
 class ClipboardMonitor: RCTEventEmitter {
@@ -37,6 +38,11 @@ class ClipboardMonitor: RCTEventEmitter {
     }
   }
 
+  private func sha256(_ str: String) -> String {
+    let digest = SHA256.hash(data: Data(str.utf8))
+    return digest.map { String(format: "%02x", $0) }.joined()
+  }
+
   private func poll() {
     let pb = NSPasteboard.general
     guard pb.changeCount != lastChangeCount else { return }
@@ -45,12 +51,43 @@ class ClipboardMonitor: RCTEventEmitter {
     sendEvent(withName: "onClipboardChange", body: payload)
   }
 
+  @objc func write(
+    _ type: String,
+    content: String,
+    filePath: String,
+    resolver resolve: @escaping RCTPromiseResolveBlock,
+    rejecter reject: @escaping RCTPromiseRejectBlock
+  ) {
+    DispatchQueue.main.async { [weak self] in
+      guard let self = self else { return }
+
+      let pb = NSPasteboard.general
+      pb.clearContents()
+
+      if type == "image", !filePath.isEmpty,
+        let data = try? Data(contentsOf: URL(fileURLWithPath: filePath)) {
+        pb.setData(data, forType: .png)
+      } else if !content.isEmpty {
+        pb.setString(content, forType: .string)
+      } else {
+        reject("empty", "Nothing to write", nil)
+        return
+      }
+
+      // Suppress the echo: our own write bumps changeCount,
+      // and we don't want that to re-insert the item.
+      self.lastChangeCount = pb.changeCount
+
+      resolve(true)
+    }
+  }
+
   private func readPasteboard(_ pb: NSPasteboard) -> [String: Any]? {
     let now = Date().timeIntervalSince1970 * 1000
 
     if let str = pb.string(forType: .string), !str.isEmpty {
       return [
-        "hash": String(str.hashValue),
+        "hash": sha256(str),
         "type": "text",
         "preview": String(str.prefix(200)),
         "content": str,
@@ -68,7 +105,7 @@ class ClipboardMonitor: RCTEventEmitter {
       do {
         try data.write(to: URL(fileURLWithPath: path))
         return [
-          "hash": String(data.hashValue),
+          "hash": sha256(data.base64EncodedString()),
           "type": "image",
           "preview": "[image]",
           "content": "",

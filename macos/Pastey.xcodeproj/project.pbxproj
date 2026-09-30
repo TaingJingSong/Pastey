@@ -12,8 +12,10 @@
 		514201522437B4B40078DB4F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 514201512437B4B40078DB4F /* Assets.xcassets */; };
 		514201552437B4B40078DB4F /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 514201532437B4B40078DB4F /* Main.storyboard */; };
 		514201582437B4B40078DB4F /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 514201572437B4B40078DB4F /* main.m */; };
-		520627CF306CCCAB008EDE67 /* ClipboardMonitor.m in Sources */ = {isa = PBXBuildFile; fileRef = 520627CD306CCCAB008EDE67 /* ClipboardMonitor.m */; };
-		520627D0306CCCAB008EDE67 /* ClipboardMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 520627CE306CCCAB008EDE67 /* ClipboardMonitor.swift */; };
+		5215C3D7306D772B001D9975 /* WindowModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5215C3D6306D772B001D9975 /* WindowModule.swift */; };
+		5215C3D8306D772B001D9975 /* ClipboardMonitor.m in Sources */ = {isa = PBXBuildFile; fileRef = 5215C3D3306D772B001D9975 /* ClipboardMonitor.m */; };
+		5215C3D9306D772B001D9975 /* ClipboardMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5215C3D4306D772B001D9975 /* ClipboardMonitor.swift */; };
+		5215C3DA306D772B001D9975 /* WindowModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 5215C3D5306D772B001D9975 /* WindowModule.m */; };
 		52891D5A306CF0B900A83237 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 52891D59306CF0B900A83237 /* libsqlite3.tbd */; };
 		52891D5D306CF11200A83237 /* PasteySQLite.m in Sources */ = {isa = PBXBuildFile; fileRef = 52891D5B306CF11200A83237 /* PasteySQLite.m */; };
 		52891D5E306CF11200A83237 /* PasteySQLite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52891D5C306CF11200A83237 /* PasteySQLite.swift */; };
@@ -34,8 +36,10 @@
 		514201562437B4B40078DB4F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		514201572437B4B40078DB4F /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		514201592437B4B40078DB4F /* Pastey.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Pastey.entitlements; sourceTree = "<group>"; };
-		520627CD306CCCAB008EDE67 /* ClipboardMonitor.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ClipboardMonitor.m; sourceTree = "<group>"; };
-		520627CE306CCCAB008EDE67 /* ClipboardMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardMonitor.swift; sourceTree = "<group>"; };
+		5215C3D3306D772B001D9975 /* ClipboardMonitor.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ClipboardMonitor.m; sourceTree = "<group>"; };
+		5215C3D4306D772B001D9975 /* ClipboardMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardMonitor.swift; sourceTree = "<group>"; };
+		5215C3D5306D772B001D9975 /* WindowModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WindowModule.m; sourceTree = "<group>"; };
+		5215C3D6306D772B001D9975 /* WindowModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowModule.swift; sourceTree = "<group>"; };
 		52891D59306CF0B900A83237 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk/usr/lib/libsqlite3.tbd; sourceTree = DEVELOPER_DIR; };
 		52891D5B306CF11200A83237 /* PasteySQLite.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PasteySQLite.m; sourceTree = "<group>"; };
 		52891D5C306CF11200A83237 /* PasteySQLite.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteySQLite.swift; sourceTree = "<group>"; };
@@ -81,10 +85,12 @@
 		5142014A2437B4B30078DB4F /* Pastey-macOS */ = {
 			isa = PBXGroup;
 			children = (
+				5215C3D3306D772B001D9975 /* ClipboardMonitor.m */,
+				5215C3D4306D772B001D9975 /* ClipboardMonitor.swift */,
+				5215C3D5306D772B001D9975 /* WindowModule.m */,
+				5215C3D6306D772B001D9975 /* WindowModule.swift */,
 				52891D5B306CF11200A83237 /* PasteySQLite.m */,
 				52891D5C306CF11200A83237 /* PasteySQLite.swift */,
-				520627CD306CCCAB008EDE67 /* ClipboardMonitor.m */,
-				520627CE306CCCAB008EDE67 /* ClipboardMonitor.swift */,
 				52E23539306CC6920025259A /* PasteyModule.m */,
 				52E2353A306CC6920025259A /* PasteyModule.swift */,
 				5142014B2437B4B30078DB4F /* AppDelegate.h */,
@@ -334,13 +340,15 @@
 			buildActionMask = 2147483647;
 			files = (
 				514201582437B4B40078DB4F /* main.m in Sources */,
+				5215C3D7306D772B001D9975 /* WindowModule.swift in Sources */,
+				5215C3D8306D772B001D9975 /* ClipboardMonitor.m in Sources */,
+				5215C3D9306D772B001D9975 /* ClipboardMonitor.swift in Sources */,
+				5215C3DA306D772B001D9975 /* WindowModule.m in Sources */,
 				5142014D2437B4B30078DB4F /* AppDelegate.mm in Sources */,
 				52E2353B306CC6920025259A /* PasteyModule.m in Sources */,
 				52E2353C306CC6920025259A /* PasteyModule.swift in Sources */,
 				52891D5D306CF11200A83237 /* PasteySQLite.m in Sources */,
 				52891D5E306CF11200A83237 /* PasteySQLite.swift in Sources */,
-				520627CF306CCCAB008EDE67 /* ClipboardMonitor.m in Sources */,
-				520627D0306CCCAB008EDE67 /* ClipboardMonitor.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -504,10 +512,7 @@
 				);
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
@@ -563,10 +568,7 @@
 					"\"$(inherited)\"",
 				);
 				MTL_ENABLE_DEBUG_INFO = NO;
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = false;

@@ -5,5 +5,10 @@
 
 RCT_EXTERN_METHOD(start)
 RCT_EXTERN_METHOD(stop)
+RCT_EXTERN_METHOD(write:(NSString *)type
+                  content:(NSString *)content
+                  filePath:(NSString *)filePath
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
 
 @end
