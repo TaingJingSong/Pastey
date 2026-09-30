@@ -1,28 +1,31 @@
 import React from 'react';
-import { FlatList, StyleSheet, View } from 'react-native';
-import type { ClipItem } from '../db/queries';
+import { FlashList } from '@shopify/flash-list';
+import { ClipItem } from '../db/queries';
 import { HistoryItem } from './HistoryItem';
+import { StyleSheet, View } from 'react-native';
 
 interface Props {
   items: ClipItem[];
-  onSelect: (id: number) => void;
+  onCopy: (id: number) => void;
   onDelete: (id: number) => void;
+  onTogglePin: (id: number) => void;
 }
 
-export function HistoryList({ items, onSelect, onDelete }: Props) {
+export function HistoryList({ items, onCopy, onDelete, onTogglePin }: Props) {
   return (
     <View style={styles.container}>
-      <FlatList<ClipItem>
+      <FlashList
         style={styles.list}
         data={items}
         keyExtractor={item => String(item.id)}
-        removeClippedSubviews={false}
+        estimatedItemSize={64}
         renderItem={({ item }) => (
-            <HistoryItem
-              item={item}
-              onPress={() => onSelect(item.id)}
-              onLongPress={() => onDelete(item.id)}
-            />
+          <HistoryItem
+          item={item}
+          onCopy={() => onCopy(item.id)}
+          onDelete={() => onDelete(item.id)}
+          onTogglePin={() => onTogglePin(item.id)}
+          />
         )}
       />
     </View>

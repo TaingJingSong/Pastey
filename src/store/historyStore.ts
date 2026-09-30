@@ -7,6 +7,7 @@ import {
   listClips,
   togglePin,
   searchClips,
+  getContent,
 } from '../db/queries';
 import { initSchema } from '../db/schema';
 
@@ -20,6 +21,7 @@ interface HistoryState {
   onClipboard: (payload: ClipboardPayload) => Promise<void>;
   toggle: (id: number) => Promise<void>;
   remove: (id: number) => Promise<void>;
+  copy: (id: number) => Promise<void>;
 }
 
 let subscription: { remove: () => void } | null = null;
@@ -70,6 +72,20 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
   remove: async id => {
     await deleteClip(id);
     await get().refresh();
+  },
+
+  copy: async id => {
+    const item = get().items.find(i => i.id === id);
+    if (!item) {return;}
+
+    const content =
+      item.type === 'text' ? (await getContent(id)) ?? '' : '';
+
+    await ClipboardMonitor.write({
+      type: item.type,
+      content,
+      filePath: item.filePath ?? undefined,
+    });
   },
 }));
 

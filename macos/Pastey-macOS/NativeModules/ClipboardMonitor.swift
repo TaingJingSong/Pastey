@@ -45,6 +45,37 @@ class ClipboardMonitor: RCTEventEmitter {
     sendEvent(withName: "onClipboardChange", body: payload)
   }
 
+  @objc func write(
+    _ type: String,
+    content: String,
+    filePath: String,
+    resolver resolve: @escaping RCTPromiseResolveBlock,
+    rejecter reject: @escaping RCTPromiseRejectBlock
+  ) {
+    DispatchQueue.main.async { [weak self] in
+      guard let self = self else { return }
+
+      let pb = NSPasteboard.general
+      pb.clearContents()
+
+      if type == "image", !filePath.isEmpty,
+        let data = try? Data(contentsOf: URL(fileURLWithPath: filePath)) {
+        pb.setData(data, forType: .png)
+      } else if !content.isEmpty {
+        pb.setString(content, forType: .string)
+      } else {
+        reject("empty", "Nothing to write", nil)
+        return
+      }
+
+      // Suppress the echo: our own write bumps changeCount,
+      // and we don't want that to re-insert the item.
+      self.lastChangeCount = pb.changeCount
+
+      resolve(true)
+    }
+  }
+
   private func readPasteboard(_ pb: NSPasteboard) -> [String: Any]? {
     let now = Date().timeIntervalSince1970 * 1000
 

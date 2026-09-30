@@ -9,7 +9,7 @@ import { HistoryList } from './components/HistoryList';
 import { SearchBar } from './components/SearchBar';
 
 function App(): React.JSX.Element {
-  const { items, init, toggle, remove, search } = useHistoryStore();
+  const { items, init, toggle, remove, search, copy } = useHistoryStore();
 
   useEffect(() => {
     init();
@@ -25,7 +25,12 @@ function App(): React.JSX.Element {
     <SafeAreaView style={styles.container}>
       <Text style={styles.heading}>History ({items.length})</Text>
       <SearchBar onSearch={onSearch}/>
-      <HistoryList items={items} onSelect={toggle} onDelete={remove}/>
+      <HistoryList
+        items={items}
+        onCopy={id => { copy(id); }}
+        onDelete={id => { remove(id); }}
+        onTogglePin={id => { toggle(id); }}
+      />
     </SafeAreaView>
   );
 }

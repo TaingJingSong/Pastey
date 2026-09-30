@@ -12,6 +12,11 @@ export interface ClipboardPayload {
 interface ClipboardMonitorNative {
   start(): void;
   stop(): void;
+  write(
+    type: string,
+    content: string,
+    filePath: string
+  ): Promise<boolean>;
 }
 
 const native = NativeModules.ClipboardMonitor as ClipboardMonitorNative | undefined;
@@ -31,5 +36,16 @@ export const ClipboardMonitor = {
   },
   subscribe(cb: (payload: ClipboardPayload) => void) {
     return emitter.addListener('onClipboardChange', cb);
+  },
+  write(payload: {
+    type: 'text' | 'image';
+    content: string;
+    filePath?: string;
+  }): Promise<boolean> {
+    return native.write(
+      payload.type,
+      payload.content,
+      payload.filePath ?? ''
+    );
   },
 };
