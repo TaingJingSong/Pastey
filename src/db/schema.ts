@@ -50,6 +50,7 @@ export async function initSchema(): Promise<void> {
   try {
     await initialization;
   } finally {
+    console.log('[db] initSchema completed');
     initialization = null;
   }
 }

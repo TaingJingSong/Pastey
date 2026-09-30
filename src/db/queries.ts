@@ -33,14 +33,15 @@ export async function insertClip(payload: {
   );
 
   const id = rows[0]?.id;
+  if (!id) {
+    return;
+  }
 
-  if (id !== undefined && payload.type === 'text') {
+  if (payload.type === 'text' && payload.content) {
     await sqlite.execute(
-      `INSERT INTO content (item_id, full_text)
-      VALUES (?, ?)
-      ON CONFLICT(item_id)
-      DO UPDATE SET full_text = excluded.full_text`,
-      [id, payload.content],
+      `INSERT INTO content (item_id, full_text) VALUES (?, ?)
+       ON CONFLICT(item_id) DO UPDATE SET full_text = excluded.full_text`,
+      [id, payload.content]
     );
   }
 }
@@ -55,6 +56,33 @@ export async function listClips(limit = 100, offset = 0): Promise<ClipItem[]> {
      ORDER BY pinned DESC, created_at DESC
      LIMIT ? OFFSET ?`,
     [limit, offset]
+  );
+}
+
+export async function searchClips(
+  query: string,
+  limit = 100,
+  offset = 0
+): Promise<ClipItem[]> {
+  const q = query.trim();
+  if (!q) {
+    return listClips(limit, offset);
+  }
+
+  const pattern = `%${q.replace(/[\\%_]/g, '\\$&')}%`;
+
+  return sqlite.execute<ClipItem>(
+    `SELECT items.id, items.hash, items.type, items.preview,
+            items.file_path AS filePath,
+            items.created_at AS createdAt,
+            items.pinned
+     FROM items
+     LEFT JOIN content ON content.item_id = items.id
+     WHERE items.preview LIKE ? ESCAPE '\\'
+        OR content.full_text LIKE ? ESCAPE '\\'
+     ORDER BY items.pinned DESC, items.created_at DESC
+     LIMIT ? OFFSET ?`,
+    [pattern, pattern, limit, offset]
   );
 }
 

@@ -5,7 +5,7 @@
   "scripts": {
     "android": "react-native run-android",
     "ios": "react-native run-ios",
-    "macos": "react-native run-macos --mode Debug",
+    "macos": "npx react-native run-macos --mode Debug",
     "macos:release": "react-native run-macos --mode Release",
     "macos:pods": "cd macos && pod install",
     "macos:xcode": "open macos/Pastey.xcworkspace",
@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@op-engineering/op-sqlite": "^18.2.5",
+    "@shopify/flash-list": "^1.7.1",
     "react": "18.3.1",
     "react-native": "0.76.3",
     "react-native-macos": "^0.76.3",
@@ -44,5 +45,10 @@
   },
   "engines": {
     "node": ">=18"
+  },
+  "op-sqlite": {
+    "sqliteOptions": {
+      "fts5": true
+    }
   }
 }

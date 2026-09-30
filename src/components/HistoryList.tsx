@@ -1,6 +1,6 @@
 import React from 'react';
-import { FlatList } from 'react-native';
-import { ClipItem } from '../db/queries';
+import { FlatList, StyleSheet, View } from 'react-native';
+import type { ClipItem } from '../db/queries';
 import { HistoryItem } from './HistoryItem';
 
 interface Props {
@@ -11,12 +11,29 @@ interface Props {
 
 export function HistoryList({ items, onSelect, onDelete }: Props) {
   return (
-    <FlatList
-      data={items}
-      keyExtractor={item => String(item.id)}
-      renderItem={({ item }) => (
-        <HistoryItem item={item} onPress={() => onSelect(item.id)} onLongPress={() => onDelete(item.id)}/>
-      )}
-    />
+    <View style={styles.container}>
+      <FlatList<ClipItem>
+        style={styles.list}
+        data={items}
+        keyExtractor={item => String(item.id)}
+        removeClippedSubviews={false}
+        renderItem={({ item }) => (
+            <HistoryItem
+              item={item}
+              onPress={() => onSelect(item.id)}
+              onLongPress={() => onDelete(item.id)}
+            />
+        )}
+      />
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  list: {
+    flex: 1,
+  },
+});

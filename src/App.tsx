@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import {
   SafeAreaView,
   Text,
@@ -6,17 +6,25 @@ import {
 } from 'react-native';
 import { useHistoryStore } from './store/historyStore';
 import { HistoryList } from './components/HistoryList';
+import { SearchBar } from './components/SearchBar';
 
 function App(): React.JSX.Element {
-  const { items, init, toggle, remove } = useHistoryStore();
+  const { items, init, toggle, remove, search } = useHistoryStore();
 
   useEffect(() => {
     init();
   }, [init]);
 
+  const onSearch = useCallback((q: string) => {
+      search(q);
+    },
+    [search]
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.heading}>History ({items.length})</Text>
+      <SearchBar onSearch={onSearch}/>
       <HistoryList items={items} onSelect={toggle} onDelete={remove}/>
     </SafeAreaView>
   );

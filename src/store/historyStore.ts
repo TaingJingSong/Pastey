@@ -6,14 +6,17 @@ import {
   insertClip,
   listClips,
   togglePin,
+  searchClips,
 } from '../db/queries';
 import { initSchema } from '../db/schema';
 
 interface HistoryState {
   items: ClipItem[];
+  query: string;
   ready: boolean;
   init: () => Promise<void>;
   refresh: () => Promise<void>;
+  search: (q: string) => Promise<void>;
   onClipboard: (payload: ClipboardPayload) => Promise<void>;
   toggle: (id: number) => Promise<void>;
   remove: (id: number) => Promise<void>;
@@ -24,6 +27,7 @@ let starting = false;
 
 export const useHistoryStore = create<HistoryState>((set, get) => ({
   items: [],
+  query: '',
   ready: false,
 
   init: async () => {
@@ -44,6 +48,12 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
 
   refresh: async () => {
     const items = await listClips(100, 0);
+    set({ items });
+  },
+
+  search: async q => {
+    set({ query: q });
+    const items = q.trim() ? await searchClips(q) : await listClips(100, 0);
     set({ items });
   },
 
