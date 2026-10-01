@@ -3,6 +3,8 @@ import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { HistoryList } from './components/HistoryList';
 import { SearchBar } from './components/SearchBar';
 import { useHistoryStore } from './store/historyStore';
+import { useSettingsStore } from './store/settingsStore';
+import { useTheme } from './theme';
 import { Popover } from './native/PopoverModule';
 
 interface AppProps {
@@ -23,8 +25,17 @@ function App(props: AppProps): React.JSX.Element {
     confirmSelection,
   } = useHistoryStore();
 
+  const { ready: settingsReady, load: loadSettings } = useSettingsStore();
+  const { colors } = useTheme();
+
   const searchInputRef = useRef<TextInput>(null);
   const isPopover = props.mode === 'popover' || true;
+
+  useEffect(() => {
+    if (!settingsReady) {
+      loadSettings();
+    }
+  }, [settingsReady, loadSettings]);
 
   useEffect(() => {
     init();
@@ -48,14 +59,25 @@ function App(props: AppProps): React.JSX.Element {
       }, 50);
     });
 
+    const themeSub = Popover.onSystemThemeChanged(({ systemTheme }) => {
+      useSettingsStore.getState().setSystemTheme(systemTheme);
+    });
+
     return () => {
       keySub.remove();
       showSub.remove();
+      themeSub.remove();
     };
   }, [init, moveSelection, confirmSelection]);
 
   return (
-    <View style={[styles.container, isPopover && styles.popoverContainer]}>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: colors.windowBackground },
+        isPopover && styles.popoverContainer,
+      ]}
+    >
       <SearchBar
         inputRef={searchInputRef}
         onSearch={search}
@@ -63,7 +85,7 @@ function App(props: AppProps): React.JSX.Element {
       />
       {items.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Text style={styles.empty}>
+          <Text style={[styles.empty, { color: colors.secondaryText }]}>
             {query ? 'No matching clipboard history' : 'Clipboard history is empty'}
           </Text>
         </View>
@@ -85,7 +107,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: '#fff',
   },
   popoverContainer: {
     padding: 0,
@@ -99,7 +120,6 @@ const styles = StyleSheet.create({
   },
   empty: {
     fontSize: 13,
-    color: '#8e8e93',
     textAlign: 'center',
   },
 });

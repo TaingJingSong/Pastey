@@ -76,6 +76,31 @@ class SettingsModule: NSObject {
     }
   }
 
+  @objc static func currentSystemTheme() -> String {
+    if let style = CFPreferencesCopyAppValue("AppleInterfaceStyle" as CFString, kCFPreferencesAnyApplication) as? String,
+       style == "Dark" {
+      return "dark"
+    }
+    if #available(macOS 10.14, *) {
+      let matched = NSApp.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua])
+      if matched == .darkAqua {
+        return "dark"
+      }
+    }
+    return "light"
+  }
+
+  @objc static func resolveAppearance(for theme: String?) -> NSAppearance {
+    if theme == "light" {
+      return NSAppearance(named: .aqua)!
+    } else if theme == "dark" {
+      return NSAppearance(named: .darkAqua)!
+    } else {
+      let isDark = currentSystemTheme() == "dark"
+      return NSAppearance(named: isDark ? .darkAqua : .aqua)!
+    }
+  }
+
   @objc func get(
     _ key: String,
     resolver resolve: @escaping RCTPromiseResolveBlock,
@@ -83,6 +108,10 @@ class SettingsModule: NSObject {
   ) {
     if key == "launchAtLogin" {
       resolve(getLaunchAtLogin())
+      return
+    }
+    if key == "systemTheme" {
+      resolve(SettingsModule.currentSystemTheme())
       return
     }
     let value = UserDefaults.standard.object(forKey: key)
@@ -105,6 +134,15 @@ class SettingsModule: NSObject {
       return
     }
     UserDefaults.standard.set(value, forKey: key)
+    if key == "theme" {
+      let themeStr = value as? String
+      DispatchQueue.main.async {
+        let appearance = SettingsModule.resolveAppearance(for: themeStr)
+        NSApp.appearance = appearance
+        PopoverModule.shared?.updateAppearance(appearance)
+        SettingsWindowModule.shared?.updateAppearance(appearance)
+      }
+    }
     resolve(true)
   }
 
@@ -116,6 +154,7 @@ class SettingsModule: NSObject {
   ) {
     var dict = UserDefaults.standard.dictionaryRepresentation()
     dict["launchAtLogin"] = getLaunchAtLogin()
+    dict["systemTheme"] = SettingsModule.currentSystemTheme()
     resolve(dict)
   }
 }

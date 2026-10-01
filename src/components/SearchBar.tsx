@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { StyleSheet, TextInput, View } from 'react-native';
+import { useTheme } from '../theme';
 
 interface Props {
   onSearch: (q: string) => void;
@@ -14,6 +15,7 @@ export function SearchBar({
   delay = 150,
   inputRef,
 }: Props) {
+  const { colors } = useTheme();
   const [value, setValue] = useState('');
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const internalRef = useRef<TextInput>(null);
@@ -32,14 +34,34 @@ export function SearchBar({
   }, [value, delay, onSearch]);
 
   return (
-    <View style={[styles.wrap, compact && styles.wrapCompact]}>
+    <View
+      style={[
+        styles.wrap,
+        compact && [styles.wrapCompact, { borderBottomColor: colors.divider }],
+      ]}
+    >
       <TextInput
         ref={resolvedRef}
-        style={[styles.input, compact && styles.inputCompact]}
+        style={[
+          styles.input,
+          {
+            borderColor: colors.inputBorder,
+            backgroundColor: colors.inputBg,
+            color: colors.text,
+          },
+          compact && [
+            styles.inputCompact,
+            {
+              color: colors.text,
+              backgroundColor: 'transparent',
+            },
+          ],
+        ]}
         value={value}
         onChangeText={setValue}
         placeholder="Type to search…"
-        placeholderTextColor="#8e8e93"
+        placeholderTextColor={colors.placeholderText}
+        selectionColor={colors.accent}
         autoCorrect={false}
         autoCapitalize="none"
         autoFocus={compact}
@@ -56,23 +78,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(0, 0, 0, 0.12)',
   },
   input: {
     fontSize: 14,
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderWidth: 1,
-    borderColor: '#ddd',
     borderRadius: 6,
-    color: '#000',
   },
   inputCompact: {
     fontSize: 14,
     paddingHorizontal: 0,
     paddingVertical: 0,
     borderWidth: 0,
-    backgroundColor: 'transparent',
-    color: '#1c1c1e',
   },
 });

@@ -9,11 +9,13 @@ import {
   View,
 } from 'react-native';
 import { useSettingsStore } from './store/settingsStore';
+import { useTheme } from './theme';
 
 // Deliberately does not touch the history store: calling its init() here would
 // start a second clipboard monitor and register the global hotkey twice.
 function SettingsApp(): React.JSX.Element {
   const { values, ready, load, update } = useSettingsStore();
+  const { colors } = useTheme();
   const [draft, setDraft] = useState<string | null>(null);
   const [newBundleId, setNewBundleId] = useState('');
 
@@ -53,13 +55,76 @@ function SettingsApp(): React.JSX.Element {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-      <Text style={styles.heading}>General</Text>
+    <ScrollView
+      style={[styles.container, { backgroundColor: colors.windowBackground }]}
+      contentContainerStyle={styles.contentContainer}
+    >
+      <Text style={[styles.heading, { color: colors.text }]}>General</Text>
+
       <View style={styles.row}>
-        <Text style={styles.label}>Items kept</Text>
+        <Text style={[styles.label, { color: colors.text }]}>Appearance</Text>
+        <View
+          testID="theme-selector"
+          style={[
+            styles.themeSelector,
+            {
+              backgroundColor: colors.segmentBg,
+              borderColor: colors.segmentBorder,
+            },
+          ]}
+        >
+          {(['system', 'light', 'dark'] as const).map(option => {
+            const isSelected = (values.theme ?? 'system') === option;
+            const label = option.charAt(0).toUpperCase() + option.slice(1);
+            return (
+              <Pressable
+                key={option}
+                testID={`theme-option-${option}`}
+                style={({ pressed }) => [
+                  styles.themeOption,
+                  isSelected && [
+                    styles.themeOptionSelected,
+                    { backgroundColor: colors.segmentSelectedBg },
+                  ],
+                  pressed && !isSelected && styles.themeOptionPressed,
+                ]}
+                onPress={() => update('theme', option)}
+                disabled={!ready}
+              >
+                <Text
+                  style={[
+                    styles.themeOptionText,
+                    {
+                      color: isSelected
+                        ? colors.segmentSelectedText
+                        : colors.secondaryText,
+                    },
+                    isSelected && styles.themeOptionTextSelected,
+                  ]}
+                >
+                  {label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </View>
+      <Text style={[styles.hint, { color: colors.secondaryText }]}>
+        Choose whether Pastey follows system appearance or stays light or dark.
+      </Text>
+
+      <View style={[styles.row, styles.marginTopRow]}>
+        <Text style={[styles.label, { color: colors.text }]}>Items kept</Text>
         <TextInput
           testID="max-items-input"
-          style={styles.input}
+          style={[
+            styles.input,
+            {
+              borderColor: colors.inputBorder,
+              backgroundColor: colors.inputBg,
+              color: colors.text,
+            },
+          ]}
           value={text}
           editable={ready}
           onChangeText={setDraft}
@@ -68,12 +133,12 @@ function SettingsApp(): React.JSX.Element {
           returnKeyType="done"
         />
       </View>
-      <Text style={styles.hint}>
+      <Text style={[styles.hint, { color: colors.secondaryText }]}>
         Unpinned history beyond this many items is removed when Pastey launches.
       </Text>
 
       <View style={[styles.row, styles.marginTopRow]}>
-        <Text style={styles.label}>Launch at login</Text>
+        <Text style={[styles.label, { color: colors.text }]}>Launch at login</Text>
         <Switch
           testID="launch-at-login-switch"
           value={values.launchAtLogin}
@@ -81,22 +146,30 @@ function SettingsApp(): React.JSX.Element {
           onValueChange={enabled => update('launchAtLogin', enabled)}
         />
       </View>
-      <Text style={styles.hint}>
+      <Text style={[styles.hint, { color: colors.secondaryText }]}>
         Start Pastey automatically when logging into your Mac.
       </Text>
 
-      <View style={styles.divider} />
+      <View style={[styles.divider, { backgroundColor: colors.divider }]} />
 
-      <Text style={styles.heading}>Excluded Applications</Text>
-      <Text style={styles.hint}>
+      <Text style={[styles.heading, { color: colors.text }]}>Excluded Applications</Text>
+      <Text style={[styles.hint, { color: colors.secondaryText }]}>
         Copies made from these applications will not be saved (e.g. password managers).
       </Text>
 
       <View style={[styles.row, styles.addAppRow]}>
         <TextInput
-          style={[styles.input, styles.addAppInput]}
+          style={[
+            styles.input,
+            styles.addAppInput,
+            {
+              borderColor: colors.inputBorder,
+              backgroundColor: colors.inputBg,
+              color: colors.text,
+            },
+          ]}
           placeholder="e.g. com.apple.keychainaccess"
-          placeholderTextColor="#8e8e93"
+          placeholderTextColor={colors.placeholderText}
           value={newBundleId}
           editable={ready}
           onChangeText={setNewBundleId}
@@ -109,6 +182,7 @@ function SettingsApp(): React.JSX.Element {
           testID="add-excluded-app-button"
           style={({ pressed }) => [
             styles.addButton,
+            { backgroundColor: colors.accent },
             (!ready || !newBundleId.trim()) && styles.disabledButton,
             pressed && ready && !!newBundleId.trim() && styles.pressedButton,
           ]}
@@ -121,25 +195,53 @@ function SettingsApp(): React.JSX.Element {
         </Pressable>
       </View>
 
-      <View style={styles.appList}>
+      <View
+        style={[
+          styles.appList,
+          {
+            borderColor: colors.cardBorder,
+            backgroundColor: colors.cardBg,
+          },
+        ]}
+      >
         {(values.excludedApps || []).length === 0 ? (
-          <Text style={styles.emptyListText}>No applications excluded</Text>
+          <Text style={[styles.emptyListText, { color: colors.secondaryText }]}>
+            No applications excluded
+          </Text>
         ) : (
           (values.excludedApps || []).map(app => (
-            <View key={app} style={styles.appRow}>
-              <Text style={styles.appText} numberOfLines={1} ellipsizeMode="middle">
+            <View
+              key={app}
+              style={[
+                styles.appRow,
+                { borderBottomColor: colors.cardRowBorder },
+              ]}
+            >
+              <Text
+                style={[styles.appText, { color: colors.text }]}
+                numberOfLines={1}
+                ellipsizeMode="middle"
+              >
                 {app}
               </Text>
               <Pressable
                 testID={`remove-app-${app}`}
                 style={({ pressed }) => [
                   styles.removeButton,
+                  { backgroundColor: colors.removeBtnBg },
                   pressed && ready && styles.pressedRemoveButton,
                 ]}
                 onPress={() => removeExcludedApp(app)}
                 disabled={!ready}
               >
-                <Text style={styles.removeButtonText}>Remove</Text>
+                <Text
+                  style={[
+                    styles.removeButtonText,
+                    { color: colors.removeBtnText },
+                  ]}
+                >
+                  Remove
+                </Text>
               </Pressable>
             </View>
           ))
@@ -152,7 +254,6 @@ function SettingsApp(): React.JSX.Element {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   contentContainer: {
     padding: 20,
@@ -174,6 +275,34 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 13,
   },
+  themeSelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 6,
+    borderWidth: 1,
+    padding: 2,
+  },
+  themeOption: {
+    paddingVertical: 3,
+    paddingHorizontal: 10,
+    borderRadius: 4,
+  },
+  themeOptionSelected: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.12,
+    shadowRadius: 1,
+  },
+  themeOptionPressed: {
+    opacity: 0.7,
+  },
+  themeOptionText: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  themeOptionTextSelected: {
+    fontWeight: '600',
+  },
   input: {
     width: 90,
     textAlign: 'right',
@@ -182,16 +311,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     borderRadius: 5,
     borderWidth: 1,
-    borderColor: '#d1d1d6',
   },
   hint: {
     marginTop: 6,
     fontSize: 11,
-    color: '#8e8e93',
   },
   divider: {
     height: 1,
-    backgroundColor: '#e5e5ea',
     marginVertical: 18,
   },
   addAppRow: {
@@ -203,7 +329,6 @@ const styles = StyleSheet.create({
   },
   addButton: {
     marginLeft: 8,
-    backgroundColor: '#007aff',
     paddingVertical: 6,
     paddingHorizontal: 14,
     borderRadius: 5,
@@ -229,8 +354,6 @@ const styles = StyleSheet.create({
     marginTop: 12,
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: '#e5e5ea',
-    backgroundColor: '#fbfbfd',
     overflow: 'hidden',
   },
   appRow: {
@@ -240,30 +363,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 7,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f2',
   },
   appText: {
     flex: 1,
     fontSize: 12,
     fontFamily: 'Menlo',
-    color: '#1d1d1f',
     marginRight: 8,
   },
   removeButton: {
     paddingVertical: 2,
     paddingHorizontal: 6,
     borderRadius: 4,
-    backgroundColor: '#ececee',
   },
   removeButtonText: {
     fontSize: 11,
-    color: '#ff3b30',
     fontWeight: '500',
   },
   emptyListText: {
     padding: 14,
     fontSize: 12,
-    color: '#8e8e93',
     textAlign: 'center',
   },
 });

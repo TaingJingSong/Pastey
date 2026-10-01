@@ -20,6 +20,29 @@
 
   [NSApp setActivationPolicy:NSApplicationActivationPolicyAccessory];
 
+  NSString *savedTheme = [[NSUserDefaults standardUserDefaults] stringForKey:@"theme"];
+  if ([savedTheme isEqualToString:@"light"]) {
+    NSApp.appearance = [NSAppearance appearanceNamed:NSAppearanceNameAqua];
+  } else if ([savedTheme isEqualToString:@"dark"]) {
+    NSApp.appearance = [NSAppearance appearanceNamed:NSAppearanceNameDarkAqua];
+  } else {
+    CFStringRef style = (CFStringRef)CFPreferencesCopyAppValue(CFSTR("AppleInterfaceStyle"), kCFPreferencesAnyApplication);
+    BOOL isDark = NO;
+    if (style != NULL) {
+      if ([(__bridge NSString *)style isEqualToString:@"Dark"]) {
+        isDark = YES;
+      }
+      CFRelease(style);
+    }
+    if (!isDark && @available(macOS 10.14, *)) {
+      NSAppearanceName matched = [[NSApp effectiveAppearance] bestMatchFromAppearancesWithNames:@[NSAppearanceNameAqua, NSAppearanceNameDarkAqua]];
+      if ([matched isEqualToString:NSAppearanceNameDarkAqua]) {
+        isDark = YES;
+      }
+    }
+    NSApp.appearance = [NSAppearance appearanceNamed:(isDark ? NSAppearanceNameDarkAqua : NSAppearanceNameAqua)];
+  }
+
   // Prevent default standard window from opening
   self.automaticallyLoadReactNativeWindow = NO;
 

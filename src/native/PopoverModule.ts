@@ -48,4 +48,10 @@ export const Popover = {
     }
     return emitter.addListener('onKey', callback);
   },
+  onSystemThemeChanged(callback: (payload: { systemTheme: 'light' | 'dark' }) => void) {
+    if (!emitter) {
+      return { remove: () => {} };
+    }
+    return emitter.addListener('onSystemThemeChanged', callback);
+  },
 };

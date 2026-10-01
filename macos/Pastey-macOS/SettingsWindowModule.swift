@@ -38,6 +38,7 @@ class SettingsWindowModule: NSObject {
         return
       }
       self.window = window
+      self.updateAppearance()
 
       NSApp.activate(ignoringOtherApps: true)
       window.makeKeyAndOrderFront(nil)
@@ -51,9 +52,23 @@ class SettingsWindowModule: NSObject {
       return
     }
     self.window = window
+    self.updateAppearance()
 
     NSApp.activate(ignoringOtherApps: true)
     window.makeKeyAndOrderFront(nil)
+  }
+
+  @objc func updateAppearance(_ appearance: NSAppearance? = nil) {
+    DispatchQueue.main.async {
+      let resolvedAppearance: NSAppearance
+      if let appearance = appearance {
+        resolvedAppearance = appearance
+      } else {
+        let theme = UserDefaults.standard.string(forKey: "theme")
+        resolvedAppearance = SettingsModule.resolveAppearance(for: theme)
+      }
+      self.window?.appearance = resolvedAppearance
+    }
   }
 
   private func makeWindow() -> SettingsWindow? {

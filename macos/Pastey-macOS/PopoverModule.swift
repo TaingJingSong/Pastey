@@ -16,10 +16,17 @@ class PopoverModule: RCTEventEmitter {
   override init() {
     super.init()
     PopoverModule.shared = self
+
+    DistributedNotificationCenter.default().addObserver(
+      self,
+      selector: #selector(systemThemeDidChange),
+      name: NSNotification.Name("AppleInterfaceThemeChangedNotification"),
+      object: nil
+    )
   }
 
   override func supportedEvents() -> [String]! {
-    return ["onPopoverShow", "onPopoverHide", "onKey"]
+    return ["onPopoverShow", "onPopoverHide", "onKey", "onSystemThemeChanged"]
   }
 
   override func startObserving() {
@@ -72,6 +79,8 @@ class PopoverModule: RCTEventEmitter {
       return
     }
 
+    self.updateAppearance()
+
     popover.show(
       relativeTo: button.bounds,
       of: button,
@@ -108,6 +117,8 @@ class PopoverModule: RCTEventEmitter {
         resolve(true)
         return
       }
+
+      self.updateAppearance()
 
       popover.show(
         relativeTo: button.bounds,
@@ -206,12 +217,44 @@ class PopoverModule: RCTEventEmitter {
     pop.contentViewController = controller
     self.hostingController = controller
     self.popover = pop
+    self.updateAppearance()
+  }
+
+  @objc func updateAppearance(_ appearance: NSAppearance? = nil) {
+    DispatchQueue.main.async {
+      let resolvedAppearance: NSAppearance
+      if let appearance = appearance {
+        resolvedAppearance = appearance
+      } else {
+        let theme = UserDefaults.standard.string(forKey: "theme")
+        resolvedAppearance = SettingsModule.resolveAppearance(for: theme)
+      }
+      self.popover?.appearance = resolvedAppearance
+      if let window = self.popover?.contentViewController?.view.window {
+        window.appearance = resolvedAppearance
+      }
+    }
+  }
+
+  @objc private func systemThemeDidChange() {
+    DispatchQueue.main.async {
+      let savedTheme = UserDefaults.standard.string(forKey: "theme")
+      if savedTheme == nil || savedTheme == "system" {
+        let appearance = SettingsModule.resolveAppearance(for: "system")
+        NSApp.appearance = appearance
+        self.updateAppearance(appearance)
+        SettingsWindowModule.shared?.updateAppearance(appearance)
+      }
+      let current = SettingsModule.currentSystemTheme()
+      self.emitEvent(name: "onSystemThemeChanged", body: ["systemTheme": current])
+    }
   }
 
   deinit {
     if let monitor = keyMonitor {
       NSEvent.removeMonitor(monitor)
     }
+    DistributedNotificationCenter.default().removeObserver(self)
   }
 }
 

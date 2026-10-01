@@ -3,6 +3,7 @@ import { FlashList } from '@shopify/flash-list';
 import { ClipItem } from '../db/queries';
 import { HistoryItem } from './HistoryItem';
 import { StyleSheet, View } from 'react-native';
+import { useTheme } from '../theme';
 
 interface Props {
   items: ClipItem[];
@@ -14,7 +15,8 @@ interface Props {
 }
 
 function ItemSeparator() {
-  return <View style={styles.separator} />;
+  const { colors } = useTheme();
+  return <View style={[styles.separator, { backgroundColor: colors.separator }]} />;
 }
 
 export function HistoryList({
@@ -64,12 +66,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  list: {
-    flex: 1,
-  },
   separator: {
     height: StyleSheet.hairlineWidth,
-    backgroundColor: 'rgba(0, 0, 0, 0.08)',
     marginLeft: 12,
   },
 });

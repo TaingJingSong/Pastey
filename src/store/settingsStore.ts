@@ -5,13 +5,16 @@ import {
   writeSetting,
   Settings,
   SettingsKey,
+  ThemePreference,
 } from '../native/SettingsModule';
+import { syncAppearance } from '../theme/useTheme';
 
 export interface SettingsState {
   values: Settings;
   ready: boolean;
   load: () => Promise<void>;
   update: <K extends SettingsKey>(key: K, value: Settings[K]) => Promise<void>;
+  setSystemTheme: (systemTheme: 'light' | 'dark') => void;
 }
 
 // Module-level singleton: the settings window and the popover share this
@@ -22,7 +25,9 @@ export const useSettingsStore = create<SettingsState>(set => ({
 
   load: async () => {
     const stored = await readAllSettings();
-    set({ values: { ...DEFAULT_SETTINGS, ...stored }, ready: true });
+    const values: Settings = { ...DEFAULT_SETTINGS, ...stored };
+    syncAppearance(values.theme);
+    set({ values, ready: true });
   },
 
   update: async (key, value) => {
@@ -30,6 +35,13 @@ export const useSettingsStore = create<SettingsState>(set => ({
     // share, so re-reading native here would only risk clobbering the new
     // value with a stale one.
     set(state => ({ values: { ...state.values, [key]: value } }));
+    if (key === 'theme') {
+      syncAppearance(value as ThemePreference);
+    }
     await writeSetting(key, value);
+  },
+
+  setSystemTheme: (systemTheme: 'light' | 'dark') => {
+    set(state => ({ values: { ...state.values, systemTheme } }));
   },
 }));

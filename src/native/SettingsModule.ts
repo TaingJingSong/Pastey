@@ -16,10 +16,15 @@ if (!maybeNative) {
 // narrowing of a captured variable inside function declarations.
 const native: SettingsNative = maybeNative;
 
+export type ThemePreference = 'system' | 'light' | 'dark';
+export type SystemTheme = 'light' | 'dark';
+
 export const DEFAULT_SETTINGS = {
   maxItems: 500,
   maxAgeDays: 30,
   launchAtLogin: false,
+  theme: 'system' as ThemePreference,
+  systemTheme: 'light' as SystemTheme,
   excludedApps: [
     'com.1password.1password',
     'com.agilebits.onepassword',
@@ -33,6 +38,8 @@ export type Settings = {
   maxItems: number;
   maxAgeDays: number;
   launchAtLogin: boolean;
+  theme: ThemePreference;
+  systemTheme: SystemTheme;
   excludedApps: string[];
 };
 
@@ -44,6 +51,14 @@ export async function readSetting<K extends SettingsKey>(
   const stored = await native.get(key);
   if (stored === null || stored === undefined) {
     return DEFAULT_SETTINGS[key];
+  }
+  if (key === 'theme') {
+    if (stored !== 'light' && stored !== 'dark' && stored !== 'system') {
+      return DEFAULT_SETTINGS.theme as Settings[K];
+    }
+  }
+  if (key === 'systemTheme') {
+    return (stored === 'dark' ? 'dark' : 'light') as Settings[K];
   }
   return stored as Settings[K];
 }
@@ -62,7 +77,17 @@ export async function readAllSettings(): Promise<Partial<Settings>> {
   for (const key of Object.keys(DEFAULT_SETTINGS) as SettingsKey[]) {
     const value = stored[key];
     if (value !== undefined && value !== null) {
-      result[key] = value as any;
+      if (key === 'theme') {
+        if (value === 'light' || value === 'dark' || value === 'system') {
+          result.theme = value;
+        } else {
+          result.theme = DEFAULT_SETTINGS.theme;
+        }
+      } else if (key === 'systemTheme') {
+        result.systemTheme = value === 'dark' ? 'dark' : 'light';
+      } else {
+        result[key] = value as any;
+      }
     }
   }
 

@@ -58,6 +58,8 @@ beforeEach(() => {
         maxItems: 500,
         maxAgeDays: 30,
         launchAtLogin: false,
+        theme: 'system',
+        systemTheme: 'light',
         excludedApps: [
           'com.1password.1password',
           'com.agilebits.onepassword',
@@ -78,7 +80,39 @@ it('SettingsApp renders and loads defaults from the settings store', async () =>
   expect(useSettingsStore.getState().ready).toBe(true);
   expect(useSettingsStore.getState().values.maxItems).toBe(500);
   expect(useSettingsStore.getState().values.launchAtLogin).toBe(false);
+  expect(useSettingsStore.getState().values.theme).toBe('system');
   expect(useSettingsStore.getState().values.excludedApps).toContain('com.1password.1password');
+});
+
+it('selecting theme option updates store and persists to native settings module', async () => {
+  const tree = await mount();
+  const darkButton = tree.root.findByProps({ testID: 'theme-option-dark' });
+
+  await act(async () => {
+    darkButton.props.onPress();
+    await new Promise(resolve => setTimeout(resolve, 50));
+  });
+
+  expect(settings.set).toHaveBeenCalledWith('theme', 'dark');
+  expect(useSettingsStore.getState().values.theme).toBe('dark');
+
+  const lightButton = tree.root.findByProps({ testID: 'theme-option-light' });
+  await act(async () => {
+    lightButton.props.onPress();
+    await new Promise(resolve => setTimeout(resolve, 50));
+  });
+
+  expect(settings.set).toHaveBeenCalledWith('theme', 'light');
+  expect(useSettingsStore.getState().values.theme).toBe('light');
+
+  const systemButton = tree.root.findByProps({ testID: 'theme-option-system' });
+  await act(async () => {
+    systemButton.props.onPress();
+    await new Promise(resolve => setTimeout(resolve, 50));
+  });
+
+  expect(settings.set).toHaveBeenCalledWith('theme', 'system');
+  expect(useSettingsStore.getState().values.theme).toBe('system');
 });
 
 it('committing a value writes it through to the native settings module', async () => {
@@ -113,12 +147,13 @@ it('clamps out-of-range input instead of persisting it', async () => {
 });
 
 it('loads a persisted value on mount', async () => {
-  settings.all.mockResolvedValue({ maxItems: 250, launchAtLogin: true });
+  settings.all.mockResolvedValue({ maxItems: 250, launchAtLogin: true, theme: 'dark' });
 
   await mount();
 
   expect(useSettingsStore.getState().values.maxItems).toBe(250);
   expect(useSettingsStore.getState().values.launchAtLogin).toBe(true);
+  expect(useSettingsStore.getState().values.theme).toBe('dark');
 });
 
 it('toggling launchAtLogin persists to settings module', async () => {
