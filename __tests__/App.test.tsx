@@ -27,6 +27,7 @@ beforeEach(() => {
         maxAgeDays: 30,
         launchAtLogin: false,
         previewLines: 1,
+        previewLayout: 'popup',
         theme: 'system',
         systemTheme: 'light',
         excludedApps: [],
@@ -166,4 +167,74 @@ it('arrow keys navigate item selection in store and list', async () => {
   });
 
   expect(useHistoryStore.getState().selectedIndex).toBe(1);
+});
+
+it('clicking preview toggle button toggles side preview', async () => {
+  let tree: any;
+  await act(async () => {
+    tree = renderer.create(<App />);
+    await new Promise(resolve => setTimeout(resolve, 50));
+  });
+  currentTree = tree;
+
+  expect(useSettingsStore.getState().values.previewLayout).toBe('popup');
+
+  const toggleBtn = tree.root.findByProps({ testID: 'quick-preview-toggle-button' });
+  await act(async () => {
+    toggleBtn.props.onPress();
+    await new Promise(resolve => setTimeout(resolve, 30));
+  });
+
+  expect(useSettingsStore.getState().values.previewLayout).toBe('side');
+
+  // Verify side preview container is mounted
+  const preview = tree.root.findByProps({ testID: 'item-preview-container' });
+  expect(preview).toBeDefined();
+
+  // Toggle back
+  await act(async () => {
+    toggleBtn.props.onPress();
+    await new Promise(resolve => setTimeout(resolve, 30));
+  });
+
+  expect(useSettingsStore.getState().values.previewLayout).toBe('popup');
+});
+
+it('clicking item preview button opens Quick Look popup modal', async () => {
+  act(() => {
+    useHistoryStore.setState({
+      items: [
+        { id: 201, hash: 'h201', type: 'text', preview: 'full preview test item', filePath: null, createdAt: 1, pinned: 0 },
+      ],
+      selectedIndex: 0,
+    });
+  });
+
+  let tree: any;
+  await act(async () => {
+    tree = renderer.create(<App />);
+    await new Promise(resolve => setTimeout(resolve, 50));
+  });
+  currentTree = tree;
+
+  // Initially modal is not open
+  expect(tree.root.findAllByProps({ testID: 'preview-popup-modal' }).length).toBe(0);
+
+  // Click item preview button
+  const itemPreviewBtn = tree.root.findByProps({ testID: 'preview-button-201' });
+  await act(async () => {
+    itemPreviewBtn.props.onPress();
+  });
+
+  // Modal is now open
+  const modal = tree.root.findByProps({ testID: 'preview-popup-modal' });
+  expect(modal).toBeDefined();
+
+  // Click backdrop to close
+  const backdrop = tree.root.findByProps({ testID: 'preview-popup-backdrop' });
+  await act(async () => {
+    backdrop.props.onPress();
+  });
+
+  expect(tree.root.findAllByProps({ testID: 'preview-popup-modal' }).length).toBe(0);
 });

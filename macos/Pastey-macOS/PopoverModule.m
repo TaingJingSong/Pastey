@@ -15,4 +15,9 @@ RCT_EXTERN_METHOD(toggle:(RCTPromiseResolveBlock)resolve
 
 RCT_EXTERN_METHOD(attachKeyMonitor)
 
+RCT_EXTERN_METHOD(setContentSize:(nonnull NSNumber *)width
+                  height:(nonnull NSNumber *)height
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
 @end

@@ -30,6 +30,12 @@ export const Popover = {
   attachKeyMonitor(): void {
     native?.attachKeyMonitor?.();
   },
+  setContentSize(width: number, height: number): Promise<boolean> {
+    if (!native?.setContentSize) {
+      return Promise.resolve(false);
+    }
+    return native.setContentSize(width, height);
+  },
   onShow(callback: () => void) {
     if (!emitter) {
       return { remove: () => {} };

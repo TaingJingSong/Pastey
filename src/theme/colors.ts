@@ -30,6 +30,11 @@ export interface ThemeColors {
   hoverBg: string;
   iconBtnHover: string;
   iconBtnText: string;
+  previewBg: string;
+  previewBorder: string;
+  overlayBg: string;
+  badgeBg: string;
+  badgeText: string;
 }
 
 export const lightColors: ThemeColors = {
@@ -61,6 +66,11 @@ export const lightColors: ThemeColors = {
   hoverBg: 'rgba(0, 0, 0, 0.05)',
   iconBtnHover: 'rgba(0, 0, 0, 0.08)',
   iconBtnText: '#636366',
+  previewBg: '#f7f7f8',
+  previewBorder: '#e5e5ea',
+  overlayBg: 'rgba(0, 0, 0, 0.40)',
+  badgeBg: 'rgba(0, 0, 0, 0.06)',
+  badgeText: '#636366',
 };
 
 export const darkColors: ThemeColors = {
@@ -92,4 +102,9 @@ export const darkColors: ThemeColors = {
   hoverBg: 'rgba(255, 255, 255, 0.08)',
   iconBtnHover: 'rgba(255, 255, 255, 0.12)',
   iconBtnText: '#aeaeb2',
+  previewBg: '#18181a',
+  previewBorder: '#38383a',
+  overlayBg: 'rgba(0, 0, 0, 0.65)',
+  badgeBg: 'rgba(255, 255, 255, 0.10)',
+  badgeText: '#aeaeb2',
 };

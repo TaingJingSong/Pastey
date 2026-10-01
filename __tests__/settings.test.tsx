@@ -108,6 +108,28 @@ it('selecting preview lines option updates store and persists to native settings
   expect(useSettingsStore.getState().values.previewLines).toBe(3);
 });
 
+it('selecting preview layout updates store and persists to native settings module', async () => {
+  const tree = await mount();
+  const sideButton = tree.root.findByProps({ testID: 'preview-layout-option-side' });
+
+  await act(async () => {
+    sideButton.props.onPress();
+    await new Promise(resolve => setTimeout(resolve, 50));
+  });
+
+  expect(settings.set).toHaveBeenCalledWith('previewLayout', 'side');
+  expect(useSettingsStore.getState().values.previewLayout).toBe('side');
+
+  const popupButton = tree.root.findByProps({ testID: 'preview-layout-option-popup' });
+  await act(async () => {
+    popupButton.props.onPress();
+    await new Promise(resolve => setTimeout(resolve, 50));
+  });
+
+  expect(settings.set).toHaveBeenCalledWith('previewLayout', 'popup');
+  expect(useSettingsStore.getState().values.previewLayout).toBe('popup');
+});
+
 it('selecting theme option updates store and persists to native settings module', async () => {
   const tree = await mount();
   const darkButton = tree.root.findByProps({ testID: 'theme-option-dark' });

@@ -224,6 +224,27 @@ class PopoverModule: RCTEventEmitter {
     self.updateAppearance()
   }
 
+  @objc func setContentSize(
+    _ width: NSNumber,
+    height: NSNumber,
+    resolve: @escaping RCTPromiseResolveBlock,
+    rejecter reject: @escaping RCTPromiseRejectBlock
+  ) {
+    DispatchQueue.main.async {
+      let size = NSSize(width: width.doubleValue, height: height.doubleValue)
+      self.popover?.contentSize = size
+      if let view = self.popover?.contentViewController?.view {
+        view.frame = NSRect(origin: .zero, size: size)
+        if let window = view.window {
+          var frame = window.frame
+          frame.size = size
+          window.setFrame(frame, display: true, animate: false)
+        }
+      }
+      resolve(true)
+    }
+  }
+
   @objc func updateAppearance(_ appearance: NSAppearance? = nil) {
     DispatchQueue.main.async {
       let resolvedAppearance: NSAppearance

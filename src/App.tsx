@@ -1,7 +1,8 @@
-import React, { useEffect, useRef } from 'react';
-import { Alert, StyleSheet, Text, TextInput, View } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { HistoryList } from './components/HistoryList';
 import { SearchBar } from './components/SearchBar';
+import { ItemPreview } from './components/ItemPreview';
 import { useHistoryStore } from './store/historyStore';
 import { useSettingsStore } from './store/settingsStore';
 import { useTheme } from './theme';
@@ -35,6 +36,13 @@ function App(props: AppProps): React.JSX.Element {
   const isPopover = props.mode === 'popover' || true;
   const previewLines = values.previewLines ?? 1;
 
+  const [previewItemId, setPreviewItemId] = useState<number | null>(null);
+
+  const showSidePreview = values.previewLayout === 'side';
+  const selectedItem = items[selectedIndex] ?? null;
+  const previewItem =
+    previewItemId !== null ? items.find(i => i.id === previewItemId) ?? null : null;
+
   useEffect(() => {
     if (!settingsReady) {
       loadSettings();
@@ -42,10 +50,46 @@ function App(props: AppProps): React.JSX.Element {
   }, [settingsReady, loadSettings]);
 
   useEffect(() => {
+    const isWide = showSidePreview;
+    Popover.setContentSize(isWide ? 760 : 420, 520).catch(() => {});
+  }, [showSidePreview]);
+
+  useEffect(() => {
     init();
     Popover.attachKeyMonitor();
 
     const keySub = Popover.onKey(({ key }) => {
+      if (previewItemId !== null) {
+        if (key === 'escape') {
+          setPreviewItemId(null);
+        } else if (key === 'enter') {
+          const current = items.find(i => i.id === previewItemId);
+          if (current) {
+            copy(current.id);
+          }
+          setPreviewItemId(null);
+        } else if (key === 'down') {
+          const curIndex = items.findIndex(i => i.id === previewItemId);
+          if (curIndex < items.length - 1) {
+            const nextItem = items[curIndex + 1];
+            if (nextItem) {
+              setPreviewItemId(nextItem.id);
+              moveSelection(1);
+            }
+          }
+        } else if (key === 'up') {
+          const curIndex = items.findIndex(i => i.id === previewItemId);
+          if (curIndex > 0) {
+            const prevItem = items[curIndex - 1];
+            if (prevItem) {
+              setPreviewItemId(prevItem.id);
+              moveSelection(-1);
+            }
+          }
+        }
+        return;
+      }
+
       if (key === 'down') {
         moveSelection(1);
       } else if (key === 'up') {
@@ -72,7 +116,7 @@ function App(props: AppProps): React.JSX.Element {
       showSub.remove();
       themeSub.remove();
     };
-  }, [init, moveSelection, confirmSelection]);
+  }, [init, moveSelection, confirmSelection, previewItemId, items, copy]);
 
   const handleClearHistory = () => {
     const hasPinned = items.some(i => i.pinned === 1);
@@ -114,6 +158,11 @@ function App(props: AppProps): React.JSX.Element {
     updateSetting('previewLines', next as 1 | 2 | 3);
   };
 
+  const handleToggleSidePreview = () => {
+    const next = showSidePreview ? 'popup' : 'side';
+    updateSetting('previewLayout', next);
+  };
+
   const handleOpenSettings = async () => {
     await SettingsWindow.open();
   };
@@ -123,37 +172,85 @@ function App(props: AppProps): React.JSX.Element {
       style={[
         styles.container,
         { backgroundColor: colors.windowBackground },
-        isPopover && styles.popoverContainer,
+        isPopover && [
+          styles.popoverContainer,
+          showSidePreview && styles.popoverContainerWide,
+        ],
       ]}
     >
-      <SearchBar
-        inputRef={searchInputRef}
-        onSearch={search}
-        compact={isPopover}
-        previewLines={previewLines}
-        onArrowDown={() => moveSelection(1)}
-        onArrowUp={() => moveSelection(-1)}
-        onSubmit={confirmSelection}
-        onClearHistory={handleClearHistory}
-        onOpenSettings={handleOpenSettings}
-        onTogglePreviewLines={handleTogglePreviewLines}
-      />
-      {items.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <Text style={[styles.empty, { color: colors.secondaryText }]}>
-            {query ? 'No matching clipboard history' : 'Clipboard history is empty'}
-          </Text>
+      <View style={styles.mainRow}>
+        <View
+          style={[
+            styles.listSection,
+            showSidePreview && styles.listSectionSplit,
+          ]}
+        >
+          <SearchBar
+            inputRef={searchInputRef}
+            onSearch={search}
+            compact={isPopover}
+            previewLines={previewLines}
+            sidePreviewActive={showSidePreview}
+            onToggleSidePreview={handleToggleSidePreview}
+            onArrowDown={() => moveSelection(1)}
+            onArrowUp={() => moveSelection(-1)}
+            onSubmit={confirmSelection}
+            onClearHistory={handleClearHistory}
+            onOpenSettings={handleOpenSettings}
+            onTogglePreviewLines={handleTogglePreviewLines}
+          />
+          {items.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <Text style={[styles.empty, { color: colors.secondaryText }]}>
+                {query ? 'No matching clipboard history' : 'Clipboard history is empty'}
+              </Text>
+            </View>
+          ) : (
+            <HistoryList
+              items={items}
+              selectedIndex={selectedIndex}
+              compact={isPopover}
+              previewLines={previewLines}
+              onCopy={copy}
+              onDelete={remove}
+              onTogglePin={toggle}
+              onPreview={id => setPreviewItemId(id)}
+            />
+          )}
         </View>
-      ) : (
-        <HistoryList
-          items={items}
-          selectedIndex={selectedIndex}
-          compact={isPopover}
-          previewLines={previewLines}
-          onCopy={copy}
-          onDelete={remove}
-          onTogglePin={toggle}
-        />
+
+        {showSidePreview && (
+          <View style={styles.sidePreviewSection}>
+            <ItemPreview
+              item={selectedItem}
+              onCopy={copy}
+              onTogglePin={toggle}
+            />
+          </View>
+        )}
+      </View>
+
+      {/* Quick Look Popup Window Modal */}
+      {previewItem && (
+        <View testID="preview-popup-modal" style={styles.modalOverlay}>
+          <Pressable
+            testID="preview-popup-backdrop"
+            style={[styles.modalBackdrop, { backgroundColor: colors.overlayBg }]}
+            onPress={() => setPreviewItemId(null)}
+          />
+          <View style={styles.modalCardWrapper}>
+            <ItemPreview
+              item={previewItem}
+              onCopy={id => {
+                copy(id);
+                setPreviewItemId(null);
+              }}
+              onTogglePin={toggle}
+              onClose={() => setPreviewItemId(null)}
+              isPopup
+            />
+          </View>
+        </View>
       )}
     </View>
   );
@@ -170,6 +267,25 @@ const styles = StyleSheet.create({
     padding: 0,
     backgroundColor: 'transparent',
   },
+  popoverContainerWide: {
+    width: 760,
+  },
+  mainRow: {
+    flex: 1,
+    flexDirection: 'row',
+  },
+  listSection: {
+    flex: 1,
+    height: '100%',
+  },
+  listSectionSplit: {
+    width: 380,
+    flex: 0,
+  },
+  sidePreviewSection: {
+    flex: 1,
+    height: '100%',
+  },
   emptyContainer: {
     flex: 1,
     alignItems: 'center',
@@ -179,6 +295,23 @@ const styles = StyleSheet.create({
   empty: {
     fontSize: 13,
     textAlign: 'center',
+  },
+  modalOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+    zIndex: 999,
+  },
+  modalBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  modalCardWrapper: {
+    width: '100%',
+    height: '100%',
+    maxWidth: 520,
+    maxHeight: 460,
+    zIndex: 1000,
   },
 });
 

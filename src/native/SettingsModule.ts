@@ -19,12 +19,14 @@ const native: SettingsNative = maybeNative;
 export type ThemePreference = 'system' | 'light' | 'dark';
 export type SystemTheme = 'light' | 'dark';
 export type PreviewLines = 1 | 2 | 3;
+export type PreviewLayout = 'popup' | 'side';
 
 export const DEFAULT_SETTINGS = {
   maxItems: 500,
   maxAgeDays: 30,
   launchAtLogin: false,
   previewLines: 1 as PreviewLines,
+  previewLayout: 'popup' as PreviewLayout,
   theme: 'system' as ThemePreference,
   systemTheme: 'light' as SystemTheme,
   excludedApps: [
@@ -41,6 +43,7 @@ export type Settings = {
   maxAgeDays: number;
   launchAtLogin: boolean;
   previewLines: PreviewLines;
+  previewLayout: PreviewLayout;
   theme: ThemePreference;
   systemTheme: SystemTheme;
   excludedApps: string[];
@@ -69,6 +72,12 @@ export async function readSetting<K extends SettingsKey>(
       return num as Settings[K];
     }
     return DEFAULT_SETTINGS.previewLines as Settings[K];
+  }
+  if (key === 'previewLayout') {
+    if (stored === 'popup' || stored === 'side') {
+      return stored as Settings[K];
+    }
+    return DEFAULT_SETTINGS.previewLayout as Settings[K];
   }
   return stored as Settings[K];
 }
@@ -101,6 +110,11 @@ export async function readAllSettings(): Promise<Partial<Settings>> {
           num === 1 || num === 2 || num === 3
             ? (num as PreviewLines)
             : DEFAULT_SETTINGS.previewLines;
+      } else if (key === 'previewLayout') {
+        result.previewLayout =
+          value === 'popup' || value === 'side'
+            ? (value as PreviewLayout)
+            : DEFAULT_SETTINGS.previewLayout;
       } else {
         result[key] = value as any;
       }

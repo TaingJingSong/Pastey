@@ -11,6 +11,7 @@ interface Props {
   onCopy: () => void;
   onDelete: () => void;
   onTogglePin: () => void;
+  onPreview?: () => void;
 }
 
 export function HistoryItem({
@@ -21,10 +22,13 @@ export function HistoryItem({
   onCopy,
   onDelete,
   onTogglePin,
+  onPreview,
 }: Props) {
   const { colors } = useTheme();
   const [isHovered, setIsHovered] = useState(false);
   const isPinned = item.pinned === 1;
+
+  const showActions = isPinned || isHovered || selected;
 
   return (
     <Pressable
@@ -60,12 +64,42 @@ export function HistoryItem({
           {item.preview}
         </Text>
       </View>
-      {(isPinned || isHovered || selected) && (
+      <View style={styles.actionContainer}>
+        {onPreview && (
+          <Pressable
+            testID={`preview-button-${item.id}`}
+            onPress={onPreview}
+            hitSlop={6}
+            style={[
+              styles.actionBtn,
+              isHovered || selected
+                ? styles.actionBtnVisible
+                : styles.actionBtnHidden,
+            ]}
+            pointerEvents={isHovered || selected ? 'auto' : 'none'}
+            accessibilityLabel="Preview full content"
+          >
+            <Text
+              style={[
+                styles.actionGlyph,
+                { color: colors.secondaryText },
+                selected && { color: colors.selectedText },
+              ]}
+            >
+              👁
+            </Text>
+          </Pressable>
+        )}
         <Pressable
           testID={`pin-button-${item.id}`}
           onPress={onTogglePin}
-          hitSlop={8}
-          style={styles.pin}
+          hitSlop={6}
+          style={[
+            styles.actionBtn,
+            showActions ? styles.actionBtnVisible : styles.actionBtnHidden,
+          ]}
+          pointerEvents={showActions ? 'auto' : 'none'}
+          accessibilityLabel={isPinned ? 'Unpin' : 'Pin'}
         >
           <Text
             style={[
@@ -77,7 +111,7 @@ export function HistoryItem({
             {isPinned ? '★' : '☆'}
           </Text>
         </Pressable>
-      )}
+      </View>
     </Pressable>
   );
 }
@@ -89,6 +123,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     flexDirection: 'row',
     alignItems: 'center',
+    minHeight: 34,
   },
   rowCompact: {
     paddingVertical: 6,
@@ -97,6 +132,7 @@ const styles = StyleSheet.create({
     marginVertical: 1,
     borderRadius: 6,
     borderBottomWidth: 0,
+    minHeight: 29,
   },
   pinned: {},
   hovered: {},
@@ -112,16 +148,32 @@ const styles = StyleSheet.create({
   previewSingleLine: {
     lineHeight: 17,
   },
-  previewSelected: {
-    fontWeight: '400',
-  },
-  pin: {
-    paddingHorizontal: 4,
-    paddingVertical: 2,
+  previewSelected: {},
+  actionContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginLeft: 6,
+    height: 18,
+  },
+  actionBtn: {
+    width: 20,
+    height: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  actionGlyph: {
+    fontSize: 11,
+    lineHeight: 13,
   },
   pinGlyph: {
     fontSize: 13,
+    lineHeight: 15,
   },
   pinGlyphSelected: {},
+  actionBtnVisible: {
+    opacity: 1,
+  },
+  actionBtnHidden: {
+    opacity: 0,
+  },
 });

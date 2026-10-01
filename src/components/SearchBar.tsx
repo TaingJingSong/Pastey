@@ -14,6 +14,8 @@ interface Props {
   onOpenSettings?: () => void;
   previewLines?: number;
   onTogglePreviewLines?: () => void;
+  onToggleSidePreview?: () => void;
+  sidePreviewActive?: boolean;
 }
 
 function ActionIconButton({
@@ -21,11 +23,13 @@ function ActionIconButton({
   onPress,
   tooltip,
   testID,
+  active = false,
 }: {
   icon: string;
   onPress: () => void;
   tooltip: string;
   testID?: string;
+  active?: boolean;
 }) {
   const { colors } = useTheme();
   const [hovered, setHovered] = useState(false);
@@ -45,11 +49,17 @@ function ActionIconButton({
       } as any)}
       style={({ pressed }) => [
         styles.actionBtn,
+        active && { backgroundColor: colors.iconBtnActive },
         hovered && { backgroundColor: colors.iconBtnHover },
         pressed && styles.actionBtnPressed,
       ]}
     >
-      <Text style={[styles.actionBtnIcon, { color: colors.iconBtnText }]}>
+      <Text
+        style={[
+          styles.actionBtnIcon,
+          { color: active ? colors.text : colors.iconBtnText },
+        ]}
+      >
         {icon}
       </Text>
     </Pressable>
@@ -68,6 +78,8 @@ export function SearchBar({
   onOpenSettings,
   previewLines = 1,
   onTogglePreviewLines,
+  onToggleSidePreview,
+  sidePreviewActive = false,
 }: Props) {
   const { colors } = useTheme();
   const [value, setValue] = useState('');
@@ -158,6 +170,15 @@ export function SearchBar({
       </View>
 
       <View style={styles.actionRow}>
+        {onToggleSidePreview && (
+          <ActionIconButton
+            testID="quick-preview-toggle-button"
+            icon="◧"
+            active={sidePreviewActive}
+            tooltip={sidePreviewActive ? 'Hide side preview' : 'Show side preview'}
+            onPress={onToggleSidePreview}
+          />
+        )}
         {onTogglePreviewLines && (
           <ActionIconButton
             testID="quick-preview-lines-button"

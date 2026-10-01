@@ -13,6 +13,7 @@ interface Props {
   onCopy: (id: number) => void;
   onDelete: (id: number) => void;
   onTogglePin: (id: number) => void;
+  onPreview?: (id: number) => void;
 }
 
 function ItemSeparator() {
@@ -28,6 +29,7 @@ export function HistoryList({
   onCopy,
   onDelete,
   onTogglePin,
+  onPreview,
 }: Props) {
   const listRef = useRef<FlashList<ClipItem>>(null);
 
@@ -64,6 +66,7 @@ export function HistoryList({
             onCopy={() => onCopy(item.id)}
             onDelete={() => onDelete(item.id)}
             onTogglePin={() => onTogglePin(item.id)}
+            onPreview={onPreview ? () => onPreview(item.id) : undefined}
           />
         )}
       />

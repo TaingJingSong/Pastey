@@ -106,3 +106,71 @@ it('applies selected background and text color when selected', () => {
   const selectedTextColor = textStyles.find((s: any) => s && s.color === lightColors.selectedText);
   expect(selectedTextColor).toBeDefined();
 });
+
+it('maintains consistent structure and padding on hover and selection (no size change)', () => {
+  const tree = renderer.create(
+    <HistoryItem
+      item={mockItem}
+      selected={false}
+      compact={true}
+      onCopy={jest.fn()}
+      onDelete={jest.fn()}
+      onTogglePin={jest.fn()}
+      onPreview={jest.fn()}
+    />
+  );
+
+  const row = tree.root.findByProps({ testID: 'history-item-1' });
+
+  // Baseline style
+  const defaultStyles: any = Object.assign({}, ...[row.props.style].flat());
+  expect(defaultStyles.minHeight).toBe(29);
+  expect(defaultStyles.paddingVertical).toBe(6);
+
+  // Hover in
+  act(() => {
+    row.props.onHoverIn();
+  });
+  const hoveredStyles: any = Object.assign({}, ...[row.props.style].flat());
+  expect(hoveredStyles.minHeight).toBe(defaultStyles.minHeight);
+  expect(hoveredStyles.paddingVertical).toBe(defaultStyles.paddingVertical);
+  expect(hoveredStyles.paddingHorizontal).toBe(defaultStyles.paddingHorizontal);
+
+  // Update to selected
+  tree.update(
+    <HistoryItem
+      item={mockItem}
+      selected={true}
+      compact={true}
+      onCopy={jest.fn()}
+      onDelete={jest.fn()}
+      onTogglePin={jest.fn()}
+      onPreview={jest.fn()}
+    />
+  );
+  const selectedStyles: any = Object.assign({}, ...[row.props.style].flat());
+  expect(selectedStyles.minHeight).toBe(defaultStyles.minHeight);
+  expect(selectedStyles.paddingVertical).toBe(defaultStyles.paddingVertical);
+  expect(selectedStyles.paddingHorizontal).toBe(defaultStyles.paddingHorizontal);
+});
+
+it('triggers onPreview callback when preview button is clicked', () => {
+  const onPreviewMock = jest.fn();
+  const tree = renderer.create(
+    <HistoryItem
+      item={mockItem}
+      selected={true}
+      onCopy={jest.fn()}
+      onDelete={jest.fn()}
+      onTogglePin={jest.fn()}
+      onPreview={onPreviewMock}
+    />
+  );
+
+  const previewBtn = tree.root.findByProps({ testID: 'preview-button-1' });
+  act(() => {
+    previewBtn.props.onPress();
+  });
+
+  expect(onPreviewMock).toHaveBeenCalledTimes(1);
+});
