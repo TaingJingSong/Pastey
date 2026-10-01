@@ -2,16 +2,48 @@
 
 #import <React/RCTBundleURLProvider.h>
 
-@implementation AppDelegate
+@implementation AppDelegate {
+  NSStatusItem *_statusItem;
+}
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notification
 {
   self.moduleName = @"Pastey";
-  // You can add your custom initial props in the dictionary below.
-  // They will be passed down to the ViewController used by React Native.
   self.initialProps = @{};
 
+  // Hide from Dock and Cmd-Tab
+  [NSApp setActivitionPolicy:NSApplicationActivationPolicyAccessory];
+
+  // Create the menu bar item
+  NSApp.setActivitioinPolicy(.accessory)
+
   return [super applicationDidFinishLaunching:notification];
+}
+- (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)sender
+{
+  return NO;
+}
+
+- (void)setupStatusItem
+{
+  _statusItem = [[NSStatusBar systemStatusBar]
+                 statusItemWithLength:NSSquareStatusItemLength];
+
+  NSStatusBarButton *button = _statusItem.button;
+
+  // SF Symbol if available; fallback to a text glyph
+  NSImage *icon = [NSImage imageWithSystemSymbolName:@"doc.on.clipboard"
+                            accessibilityDescription:@"Pastey"];
+  if (icon) {
+    [icon setTemplate:YES]; // adapts to light/dark menu bar
+    button.image = icon;
+  } else {
+    button.title = @"P";
+  }
+
+  button.target = self;
+  button.action = @selector(handleStatusItemClick:);
+  [button sendActionOn:NSEventMaskLeftMouseUp];
 }
 
 - (NSURL *)sourceURLForBridge:(RCTBridge *)bridge
@@ -28,11 +60,6 @@
 #endif
 }
 
-/// This method controls whether the `concurrentRoot`feature of React18 is turned on or off.
-///
-/// @see: https://reactjs.org/blog/2022/03/29/react-v18.html
-/// @note: This requires to be rendering on Fabric (i.e. on the New Architecture).
-/// @return: `true` if the `concurrentRoot` feature is enabled. Otherwise, it returns `false`.
 - (BOOL)concurrentRootEnabled
 {
 #ifdef RN_FABRIC_ENABLED
