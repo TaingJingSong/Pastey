@@ -54,6 +54,8 @@
   self.pasteyRootViewInstance = [self.rootViewFactory viewWithModuleName:self.moduleName
                                                        initialProperties:self.initialProps
                                                            launchOptions:nil];
+  self.pasteyRootViewInstance.frame = NSMakeRect(0, 0, 420, 520);
+  self.pasteyRootViewInstance.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
 
   [self setupStatusItem];
 }
@@ -100,6 +102,8 @@
     self.pasteyRootViewInstance = [self.rootViewFactory viewWithModuleName:self.moduleName
                                                          initialProperties:self.initialProps
                                                              launchOptions:nil];
+    self.pasteyRootViewInstance.frame = NSMakeRect(0, 0, 420, 520);
+    self.pasteyRootViewInstance.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
   }
   return self.pasteyRootViewInstance;
 }

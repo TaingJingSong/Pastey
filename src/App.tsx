@@ -1,11 +1,12 @@
 import React, { useEffect, useRef } from 'react';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, StyleSheet, Text, TextInput, View } from 'react-native';
 import { HistoryList } from './components/HistoryList';
 import { SearchBar } from './components/SearchBar';
 import { useHistoryStore } from './store/historyStore';
 import { useSettingsStore } from './store/settingsStore';
 import { useTheme } from './theme';
 import { Popover } from './native/PopoverModule';
+import { SettingsWindow } from './native/SettingsWindowModule';
 
 interface AppProps {
   mode?: string;
@@ -19,17 +20,20 @@ function App(props: AppProps): React.JSX.Element {
     init,
     toggle,
     remove,
+    clear,
     search,
     copy,
     moveSelection,
     confirmSelection,
   } = useHistoryStore();
 
-  const { ready: settingsReady, load: loadSettings } = useSettingsStore();
+  const { values, ready: settingsReady, load: loadSettings, update: updateSetting } =
+    useSettingsStore();
   const { colors } = useTheme();
 
   const searchInputRef = useRef<TextInput>(null);
   const isPopover = props.mode === 'popover' || true;
+  const previewLines = values.previewLines ?? 1;
 
   useEffect(() => {
     if (!settingsReady) {
@@ -70,6 +74,50 @@ function App(props: AppProps): React.JSX.Element {
     };
   }, [init, moveSelection, confirmSelection]);
 
+  const handleClearHistory = () => {
+    const hasPinned = items.some(i => i.pinned === 1);
+    if (hasPinned) {
+      Alert.alert(
+        'Clear Clipboard History',
+        'Do you want to clear unpinned items or all items including pinned?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Clear Unpinned',
+            onPress: () => clear(false),
+          },
+          {
+            text: 'Clear All',
+            style: 'destructive',
+            onPress: () => clear(true),
+          },
+        ]
+      );
+    } else {
+      Alert.alert(
+        'Clear Clipboard History',
+        'Are you sure you want to clear clipboard history?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Clear',
+            style: 'destructive',
+            onPress: () => clear(true),
+          },
+        ]
+      );
+    }
+  };
+
+  const handleTogglePreviewLines = () => {
+    const next = previewLines === 1 ? 2 : previewLines === 2 ? 3 : 1;
+    updateSetting('previewLines', next as 1 | 2 | 3);
+  };
+
+  const handleOpenSettings = async () => {
+    await SettingsWindow.open();
+  };
+
   return (
     <View
       style={[
@@ -82,6 +130,13 @@ function App(props: AppProps): React.JSX.Element {
         inputRef={searchInputRef}
         onSearch={search}
         compact={isPopover}
+        previewLines={previewLines}
+        onArrowDown={() => moveSelection(1)}
+        onArrowUp={() => moveSelection(-1)}
+        onSubmit={confirmSelection}
+        onClearHistory={handleClearHistory}
+        onOpenSettings={handleOpenSettings}
+        onTogglePreviewLines={handleTogglePreviewLines}
       />
       {items.length === 0 ? (
         <View style={styles.emptyContainer}>
@@ -94,6 +149,7 @@ function App(props: AppProps): React.JSX.Element {
           items={items}
           selectedIndex={selectedIndex}
           compact={isPopover}
+          previewLines={previewLines}
           onCopy={copy}
           onDelete={remove}
           onTogglePin={toggle}
@@ -109,6 +165,8 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   popoverContainer: {
+    width: 420,
+    height: 520,
     padding: 0,
     backgroundColor: 'transparent',
   },

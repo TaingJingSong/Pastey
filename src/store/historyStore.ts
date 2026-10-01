@@ -3,6 +3,7 @@ import { Popover } from '../native/PopoverModule';
 import { ClipboardMonitor, ClipboardPayload } from '../native/ClipboardMonitor';
 import {
   ClipItem,
+  clearClips,
   deleteClip,
   insertClip,
   listClips,
@@ -24,6 +25,7 @@ export interface HistoryState {
   onClipboard: (payload: ClipboardPayload) => Promise<void>;
   toggle: (id: number) => Promise<void>;
   remove: (id: number) => Promise<void>;
+  clear: (clearPinned?: boolean) => Promise<void>;
   copy: (id: number) => Promise<void>;
   setSelectedIndex: (index: number) => void;
   moveSelection: (delta: number) => void;
@@ -33,6 +35,8 @@ export interface HistoryState {
 let subscription: { remove: () => void } | null = null;
 let starting = false;
 let hotkeySub: { remove: () => void } | null = null;
+let lastMoveTime = 0;
+let lastDelta = 0;
 
 export const useHistoryStore = create<HistoryState>((set, get) => ({
   items: [],
@@ -92,11 +96,23 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
     await get().refresh();
   },
 
+  clear: async (clearPinned = false) => {
+    await clearClips(clearPinned);
+    await get().refresh();
+  },
+
   setSelectedIndex: index => {
     set({ selectedIndex: index });
   },
 
   moveSelection: delta => {
+    const now = Date.now();
+    if (now - lastMoveTime < 40 && delta === lastDelta) {
+      return;
+    }
+    lastMoveTime = now;
+    lastDelta = delta;
+
     const { items, selectedIndex } = get();
     if (items.length === 0) {
       return;

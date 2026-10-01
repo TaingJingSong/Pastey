@@ -145,6 +145,20 @@ export async function clearAll() {
   await sqlite.execute('DELETE FROM items');
 }
 
+export async function clearClips(clearPinned = false) {
+  if (clearPinned) {
+    await sqlite.execute('DELETE FROM items');
+  } else {
+    await sqlite.execute('DELETE FROM items WHERE pinned = 0');
+  }
+  const remaining = await sqlite.execute<{ filePath: string | null }>(
+    'SELECT file_path AS filePath FROM items WHERE file_path IS NOT NULL'
+  );
+  await ClipboardMonitor.syncImages(
+    remaining.map(row => row.filePath).filter((p): p is string => !!p)
+  );
+}
+
 export async function pruneOldItems(): Promise<number> {
   const [maxItems, maxAgeDays] = await Promise.all([
     readSetting('maxItems'),

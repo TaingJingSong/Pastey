@@ -9,6 +9,7 @@ interface Props {
   items: ClipItem[];
   selectedIndex?: number;
   compact?: boolean;
+  previewLines?: number;
   onCopy: (id: number) => void;
   onDelete: (id: number) => void;
   onTogglePin: (id: number) => void;
@@ -23,6 +24,7 @@ export function HistoryList({
   items,
   selectedIndex = 0,
   compact = false,
+  previewLines = 1,
   onCopy,
   onDelete,
   onTogglePin,
@@ -31,11 +33,15 @@ export function HistoryList({
 
   useEffect(() => {
     if (selectedIndex >= 0 && selectedIndex < items.length) {
-      listRef.current?.scrollToIndex({
-        index: selectedIndex,
-        animated: true,
-        viewPosition: 0.5,
-      });
+      try {
+        listRef.current?.scrollToIndex({
+          index: selectedIndex,
+          animated: false,
+          viewPosition: 0.5,
+        });
+      } catch {
+        // Safe fallback if items not measured
+      }
     }
   }, [selectedIndex, items.length]);
 
@@ -44,14 +50,17 @@ export function HistoryList({
       <FlashList
         ref={listRef}
         data={items}
+        extraData={{ selectedIndex, previewLines }}
         keyExtractor={item => String(item.id)}
-        estimatedItemSize={54}
+        estimatedItemSize={previewLines === 1 ? 32 : 48}
+        estimatedListSize={{ width: 420, height: 476 }}
         ItemSeparatorComponent={compact ? undefined : ItemSeparator}
         renderItem={({ item, index }) => (
           <HistoryItem
             item={item}
             selected={compact && index === selectedIndex}
             compact={compact}
+            previewLines={previewLines}
             onCopy={() => onCopy(item.id)}
             onDelete={() => onDelete(item.id)}
             onTogglePin={() => onTogglePin(item.id)}
@@ -65,6 +74,8 @@ export function HistoryList({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    minHeight: 2,
+    minWidth: 2,
   },
   separator: {
     height: StyleSheet.hairlineWidth,

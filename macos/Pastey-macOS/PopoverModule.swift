@@ -23,6 +23,10 @@ class PopoverModule: RCTEventEmitter {
       name: NSNotification.Name("AppleInterfaceThemeChangedNotification"),
       object: nil
     )
+
+    DispatchQueue.main.async { [weak self] in
+      self?.ensurePopover()
+    }
   }
 
   override func supportedEvents() -> [String]! {

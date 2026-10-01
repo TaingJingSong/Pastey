@@ -114,6 +114,58 @@ function SettingsApp(): React.JSX.Element {
       </Text>
 
       <View style={[styles.row, styles.marginTopRow]}>
+        <Text style={[styles.label, { color: colors.text }]}>Preview lines</Text>
+        <View
+          testID="preview-lines-selector"
+          style={[
+            styles.themeSelector,
+            {
+              backgroundColor: colors.segmentBg,
+              borderColor: colors.segmentBorder,
+            },
+          ]}
+        >
+          {([1, 2, 3] as const).map(option => {
+            const isSelected = (values.previewLines ?? 1) === option;
+            const label = `${option} ${option === 1 ? 'line' : 'lines'}`;
+            return (
+              <Pressable
+                key={option}
+                testID={`preview-lines-option-${option}`}
+                style={({ pressed }) => [
+                  styles.themeOption,
+                  isSelected && [
+                    styles.themeOptionSelected,
+                    { backgroundColor: colors.segmentSelectedBg },
+                  ],
+                  pressed && !isSelected && styles.themeOptionPressed,
+                ]}
+                onPress={() => update('previewLines', option)}
+                disabled={!ready}
+              >
+                <Text
+                  style={[
+                    styles.themeOptionText,
+                    {
+                      color: isSelected
+                        ? colors.segmentSelectedText
+                        : colors.secondaryText,
+                    },
+                    isSelected && styles.themeOptionTextSelected,
+                  ]}
+                >
+                  {label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </View>
+      <Text style={[styles.hint, { color: colors.secondaryText }]}>
+        Number of preview lines displayed for each clipboard item in history.
+      </Text>
+
+      <View style={[styles.row, styles.marginTopRow]}>
         <Text style={[styles.label, { color: colors.text }]}>Items kept</Text>
         <TextInput
           testID="max-items-input"

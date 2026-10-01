@@ -18,11 +18,13 @@ const native: SettingsNative = maybeNative;
 
 export type ThemePreference = 'system' | 'light' | 'dark';
 export type SystemTheme = 'light' | 'dark';
+export type PreviewLines = 1 | 2 | 3;
 
 export const DEFAULT_SETTINGS = {
   maxItems: 500,
   maxAgeDays: 30,
   launchAtLogin: false,
+  previewLines: 1 as PreviewLines,
   theme: 'system' as ThemePreference,
   systemTheme: 'light' as SystemTheme,
   excludedApps: [
@@ -38,6 +40,7 @@ export type Settings = {
   maxItems: number;
   maxAgeDays: number;
   launchAtLogin: boolean;
+  previewLines: PreviewLines;
   theme: ThemePreference;
   systemTheme: SystemTheme;
   excludedApps: string[];
@@ -59,6 +62,13 @@ export async function readSetting<K extends SettingsKey>(
   }
   if (key === 'systemTheme') {
     return (stored === 'dark' ? 'dark' : 'light') as Settings[K];
+  }
+  if (key === 'previewLines') {
+    const num = Number(stored);
+    if (num === 1 || num === 2 || num === 3) {
+      return num as Settings[K];
+    }
+    return DEFAULT_SETTINGS.previewLines as Settings[K];
   }
   return stored as Settings[K];
 }
@@ -85,6 +95,12 @@ export async function readAllSettings(): Promise<Partial<Settings>> {
         }
       } else if (key === 'systemTheme') {
         result.systemTheme = value === 'dark' ? 'dark' : 'light';
+      } else if (key === 'previewLines') {
+        const num = Number(value);
+        result.previewLines =
+          num === 1 || num === 2 || num === 3
+            ? (num as PreviewLines)
+            : DEFAULT_SETTINGS.previewLines;
       } else {
         result[key] = value as any;
       }

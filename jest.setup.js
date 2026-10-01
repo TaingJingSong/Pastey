@@ -1,5 +1,9 @@
 /* global jest */
-const { NativeModules } = require('react-native');
+const RN = require('react-native');
+const { NativeModules } = RN;
+if (typeof RN.useColorScheme !== 'function') {
+  RN.useColorScheme = jest.fn(() => 'light');
+}
 require('@shopify/flash-list/jestSetup');
 
 NativeModules.ClipboardMonitor = {
@@ -30,6 +34,10 @@ NativeModules.PopoverModule = {
   attachKeyMonitor: jest.fn(),
   addListener: jest.fn(),
   removeListeners: jest.fn(),
+};
+
+NativeModules.SettingsWindowModule = {
+  open: jest.fn().mockResolvedValue(true),
 };
 
 let userDefaults = {};

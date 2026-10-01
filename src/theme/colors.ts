@@ -27,6 +27,9 @@ export interface ThemeColors {
   segmentBorder: string;
   segmentSelectedBg: string;
   segmentSelectedText: string;
+  hoverBg: string;
+  iconBtnHover: string;
+  iconBtnText: string;
 }
 
 export const lightColors: ThemeColors = {
@@ -55,6 +58,9 @@ export const lightColors: ThemeColors = {
   segmentBorder: '#d1d1d6',
   segmentSelectedBg: '#ffffff',
   segmentSelectedText: '#000000',
+  hoverBg: 'rgba(0, 0, 0, 0.05)',
+  iconBtnHover: 'rgba(0, 0, 0, 0.08)',
+  iconBtnText: '#636366',
 };
 
 export const darkColors: ThemeColors = {
@@ -83,4 +89,7 @@ export const darkColors: ThemeColors = {
   segmentBorder: '#38383a',
   segmentSelectedBg: '#505054',
   segmentSelectedText: '#ffffff',
+  hoverBg: 'rgba(255, 255, 255, 0.08)',
+  iconBtnHover: 'rgba(255, 255, 255, 0.12)',
+  iconBtnText: '#aeaeb2',
 };

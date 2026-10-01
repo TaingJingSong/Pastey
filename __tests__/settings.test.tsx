@@ -58,6 +58,7 @@ beforeEach(() => {
         maxItems: 500,
         maxAgeDays: 30,
         launchAtLogin: false,
+        previewLines: 1,
         theme: 'system',
         systemTheme: 'light',
         excludedApps: [
@@ -80,8 +81,31 @@ it('SettingsApp renders and loads defaults from the settings store', async () =>
   expect(useSettingsStore.getState().ready).toBe(true);
   expect(useSettingsStore.getState().values.maxItems).toBe(500);
   expect(useSettingsStore.getState().values.launchAtLogin).toBe(false);
+  expect(useSettingsStore.getState().values.previewLines).toBe(1);
   expect(useSettingsStore.getState().values.theme).toBe('system');
   expect(useSettingsStore.getState().values.excludedApps).toContain('com.1password.1password');
+});
+
+it('selecting preview lines option updates store and persists to native settings module', async () => {
+  const tree = await mount();
+  const twoLinesButton = tree.root.findByProps({ testID: 'preview-lines-option-2' });
+
+  await act(async () => {
+    twoLinesButton.props.onPress();
+    await new Promise(resolve => setTimeout(resolve, 50));
+  });
+
+  expect(settings.set).toHaveBeenCalledWith('previewLines', 2);
+  expect(useSettingsStore.getState().values.previewLines).toBe(2);
+
+  const threeLinesButton = tree.root.findByProps({ testID: 'preview-lines-option-3' });
+  await act(async () => {
+    threeLinesButton.props.onPress();
+    await new Promise(resolve => setTimeout(resolve, 50));
+  });
+
+  expect(settings.set).toHaveBeenCalledWith('previewLines', 3);
+  expect(useSettingsStore.getState().values.previewLines).toBe(3);
 });
 
 it('selecting theme option updates store and persists to native settings module', async () => {
