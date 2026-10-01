@@ -27,6 +27,10 @@
 		524BF0AD306DF89F00C25727 /* PopoverModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 524BF0AE306DF89F00C25727 /* PopoverModule.m */; };
 		537BE2C8BF4D0F241234666A /* libPods-Pastey-macOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EA4C605595D9306B025162B4 /* libPods-Pastey-macOS.a */; };
 		77A031C5B7E1473497240F9E /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 59E14CBFF628E09B42D885AA /* PrivacyInfo.xcprivacy */; };
+		5A11C0DE0002000000000001 /* SettingsModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A11C0DE0001000000000001 /* SettingsModule.swift */; };
+		5A11C0DE0002000000000002 /* SettingsModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 5A11C0DE0001000000000002 /* SettingsModule.m */; };
+		5A11C0DE0002000000000003 /* SettingsWindowModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A11C0DE0001000000000003 /* SettingsWindowModule.swift */; };
+		5A11C0DE0002000000000004 /* SettingsWindowModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 5A11C0DE0001000000000004 /* SettingsWindowModule.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -54,6 +58,10 @@
 		524BF0AC306DF89F00C25727 /* PopoverModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopoverModule.swift; sourceTree = "<group>"; };
 		524BF0AE306DF89F00C25727 /* PopoverModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PopoverModule.m; sourceTree = "<group>"; };
 		52E2353D306CC69E0025259A /* Pastey-macOS-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Pastey-macOS-Bridging-Header.h"; sourceTree = "<group>"; };
+		5A11C0DE0001000000000001 /* SettingsModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsModule.swift; sourceTree = "<group>"; };
+		5A11C0DE0001000000000002 /* SettingsModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SettingsModule.m; sourceTree = "<group>"; };
+		5A11C0DE0001000000000003 /* SettingsWindowModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindowModule.swift; sourceTree = "<group>"; };
+		5A11C0DE0001000000000004 /* SettingsWindowModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SettingsWindowModule.m; sourceTree = "<group>"; };
 		59E14CBFF628E09B42D885AA /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		6C826AF4A1B6BE3295B78554 /* Pods-Pastey-macOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Pastey-macOS.debug.xcconfig"; path = "Target Support Files/Pods-Pastey-macOS/Pods-Pastey-macOS.debug.xcconfig"; sourceTree = "<group>"; };
 		EA4C605595D9306B025162B4 /* libPods-Pastey-macOS.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Pastey-macOS.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -104,6 +112,10 @@
 				52E23539306CC6920025259A /* PasteyModule.m */,
 				52E2353A306CC6920025259A /* PasteyModule.swift */,
 				524BF0AE306DF89F00C25727 /* PopoverModule.m */,
+				5A11C0DE0001000000000002 /* SettingsModule.m */,
+				5A11C0DE0001000000000001 /* SettingsModule.swift */,
+				5A11C0DE0001000000000004 /* SettingsWindowModule.m */,
+				5A11C0DE0001000000000003 /* SettingsWindowModule.swift */,
 				524BF0AC306DF89F00C25727 /* PopoverModule.swift */,
 				5142014B2437B4B30078DB4F /* AppDelegate.h */,
 				5142014C2437B4B30078DB4F /* AppDelegate.mm */,
@@ -365,6 +377,10 @@
 				52891D5E306CF11200A83237 /* PasteySQLite.swift in Sources */,
 				524BF0AB306DF89F00C25727 /* PopoverModule.swift in Sources */,
 				524BF0AD306DF89F00C25727 /* PopoverModule.m in Sources */,
+				5A11C0DE0002000000000001 /* SettingsModule.swift in Sources */,
+				5A11C0DE0002000000000002 /* SettingsModule.m in Sources */,
+				5A11C0DE0002000000000003 /* SettingsWindowModule.swift in Sources */,
+				5A11C0DE0002000000000004 /* SettingsWindowModule.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

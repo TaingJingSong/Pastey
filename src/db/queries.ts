@@ -1,12 +1,11 @@
 import { sqlite } from '../native/PasteySQLite';
 import { ClipboardMonitor } from '../native/ClipboardMonitor';
-
-export const MAX_ITEMS = 500;
-export const MAX_AGE_DAYS = 30;
+import { readSetting } from '../native/SettingsModule';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-// Unpinned rows that are either past the age limit or outside the newest MAX_ITEMS.
+// Unpinned rows that are either past the age limit or outside the newest
+// maxItems. maxItems is a bound param so the limit lives in the settings store.
 const EXPIRABLE = `
   pinned = 0
   AND (
@@ -127,17 +126,21 @@ export async function clearAll() {
 }
 
 export async function pruneOldItems(): Promise<number> {
-  const cutoff = Date.now() - MAX_AGE_DAYS * DAY_MS;
+  const [maxItems, maxAgeDays] = await Promise.all([
+    readSetting('maxItems'),
+    readSetting('maxAgeDays'),
+  ]);
+  const cutoff = Date.now() - maxAgeDays * DAY_MS;
 
   const doomed = await sqlite.execute<{ id: number }>(
     `SELECT id FROM items WHERE ${EXPIRABLE}`,
-    [cutoff, MAX_ITEMS]
+    [cutoff, maxItems]
   );
   if (doomed.length === 0) {
     return 0;
   }
 
-  await sqlite.execute(`DELETE FROM items WHERE ${EXPIRABLE}`, [cutoff, MAX_ITEMS]);
+  await sqlite.execute(`DELETE FROM items WHERE ${EXPIRABLE}`, [cutoff, maxItems]);
 
   // Rows first, then files: unlinking before the DELETE would risk leaving a
   // live row pointing at a file that no longer exists. Anything the DELETE

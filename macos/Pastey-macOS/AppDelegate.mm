@@ -25,12 +25,45 @@
 
   [super applicationDidFinishLaunching:notification];
 
+  [self setupMainMenu];
+
   // Preload React Native root view so clipboard monitoring and hotkeys activate immediately
   self.pasteyRootViewInstance = [self.rootViewFactory viewWithModuleName:self.moduleName
                                                        initialProperties:self.initialProps
                                                            launchOptions:nil];
 
   [self setupStatusItem];
+}
+
+// A menu bar item's key equivalent only fires while that menu is open, so the
+// status menu alone cannot deliver an app-wide Cmd+,. This app runs as an
+// accessory, so the main menu stays hidden until a window activates it.
+- (void)setupMainMenu
+{
+  NSMenu *mainMenu = [[NSMenu alloc] init];
+
+  NSMenuItem *appMenuItem = [[NSMenuItem alloc] init];
+  NSMenu *appMenu = [[NSMenu alloc] init];
+
+  NSMenuItem *preferences =
+      [[NSMenuItem alloc] initWithTitle:@"Preferences…"
+                                 action:@selector(openSettings:)
+                          keyEquivalent:@","];
+  preferences.target = self;
+  [appMenu addItem:preferences];
+
+  [appMenu addItem:[NSMenuItem separatorItem]];
+
+  NSMenuItem *quit = [[NSMenuItem alloc] initWithTitle:@"Quit Pastey"
+                                                action:@selector(quitApp:)
+                                         keyEquivalent:@"q"];
+  quit.target = self;
+  [appMenu addItem:quit];
+
+  appMenuItem.submenu = appMenu;
+  [mainMenu addItem:appMenuItem];
+
+  NSApp.mainMenu = mainMenu;
 }
 
 - (NSStatusBarButton *)statusItemButton
@@ -41,6 +74,14 @@
 - (NSView *)pasteyRootView
 {
   return self.pasteyRootViewInstance;
+}
+
+- (NSView *)rootViewForModuleName:(NSString *)moduleName
+                      initialProps:(NSDictionary *)initialProps
+{
+  return [self.rootViewFactory viewWithModuleName:moduleName
+                                 initialProperties:initialProps
+                                     launchOptions:nil];
 }
 
 - (BOOL)applicationShouldTerminateAfterLastWindowClosed:
@@ -97,6 +138,15 @@
 
   [menu addItem:[NSMenuItem separatorItem]];
 
+  NSMenuItem *preferencesItem =
+      [[NSMenuItem alloc] initWithTitle:@"Preferences…"
+                                action:@selector(openSettings:)
+                         keyEquivalent:@","];
+  preferencesItem.target = self;
+  [menu addItem:preferencesItem];
+
+  [menu addItem:[NSMenuItem separatorItem]];
+
   NSMenuItem *quitItem =
       [[NSMenuItem alloc] initWithTitle:@"Quit Pastey"
                                 action:@selector(quitApp:)
@@ -147,6 +197,11 @@
 - (void)quitApp:(id)sender
 {
   [NSApp terminate:nil];
+}
+
+- (void)openSettings:(id)sender
+{
+  [SettingsWindowModule openSettings];
 }
 
 - (NSURL *)sourceURLForBridge:(RCTBridge *)bridge

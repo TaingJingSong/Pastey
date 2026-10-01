@@ -31,3 +31,13 @@ NativeModules.PopoverModule = {
   addListener: jest.fn(),
   removeListeners: jest.fn(),
 };
+
+let userDefaults = {};
+NativeModules.SettingsModule = {
+  get: jest.fn(key => Promise.resolve(userDefaults[key] ?? null)),
+  set: jest.fn((key, value) => {
+    userDefaults[key] = value;
+    return Promise.resolve(true);
+  }),
+  all: jest.fn(() => Promise.resolve(userDefaults)),
+};
