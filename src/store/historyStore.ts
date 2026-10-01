@@ -49,7 +49,7 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
     subscription = ClipboardMonitor.subscribe(payload => {
       get().onClipboard(payload);
     });
-    await Hotkey.register(Key.V, Mod.cmd || Mod.shift);
+    await Hotkey.register(Key.V, Mod.cmd || Mod.option);
     hotkeySub = Hotkey.subscribe(() => {
       AppWindow.toggle();
     });
