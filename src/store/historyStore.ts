@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { AppWindow } from '../native/WindowModule';
+import { Popover } from '../native/PopoverModule';
 import { ClipboardMonitor, ClipboardPayload } from '../native/ClipboardMonitor';
 import {
   ClipItem,
@@ -13,10 +13,11 @@ import {
 import { Hotkey, Key, Mod } from '../native/HotkeyModule';
 import { initSchema } from '../db/schema';
 
-interface HistoryState {
+export interface HistoryState {
   items: ClipItem[];
   query: string;
   ready: boolean;
+  selectedIndex: number;
   init: () => Promise<void>;
   refresh: () => Promise<void>;
   search: (q: string) => Promise<void>;
@@ -24,6 +25,9 @@ interface HistoryState {
   toggle: (id: number) => Promise<void>;
   remove: (id: number) => Promise<void>;
   copy: (id: number) => Promise<void>;
+  setSelectedIndex: (index: number) => void;
+  moveSelection: (delta: number) => void;
+  confirmSelection: () => Promise<void>;
 }
 
 let subscription: { remove: () => void } | null = null;
@@ -34,6 +38,7 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
   items: [],
   query: '',
   ready: false,
+  selectedIndex: 0,
 
   init: async () => {
     if (get().ready || starting) {
@@ -49,21 +54,27 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
     subscription = ClipboardMonitor.subscribe(payload => {
       get().onClipboard(payload);
     });
-    await Hotkey.register(Key.V, Mod.cmd || Mod.option);
+
+    // Cmd + Shift + V or Cmd + Option + V
+    await Hotkey.register(Key.V, Mod.cmd + Mod.shift);
     hotkeySub = Hotkey.subscribe(() => {
-      AppWindow.toggle();
+      Popover.toggle();
     });
   },
 
   refresh: async () => {
-    const items = await listClips(100, 0);
-    set({ items });
+    const { query } = get();
+    const items = query.trim() ? await searchClips(query) : await listClips(100, 0);
+    set(state => ({
+      items,
+      selectedIndex: Math.max(0, Math.min(state.selectedIndex, Math.max(0, items.length - 1))),
+    }));
   },
 
   search: async q => {
-    set({ query: q });
+    set({ query: q, selectedIndex: 0 });
     const items = q.trim() ? await searchClips(q) : await listClips(100, 0);
-    set({ items });
+    set({ items, selectedIndex: 0 });
   },
 
   onClipboard: async payload => {
@@ -81,9 +92,35 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
     await get().refresh();
   },
 
+  setSelectedIndex: index => {
+    set({ selectedIndex: index });
+  },
+
+  moveSelection: delta => {
+    const { items, selectedIndex } = get();
+    if (items.length === 0) {
+      return;
+    }
+    const next = Math.max(0, Math.min(items.length - 1, selectedIndex + delta));
+    set({ selectedIndex: next });
+  },
+
+  confirmSelection: async () => {
+    const { items, selectedIndex, copy } = get();
+    if (items.length === 0 || selectedIndex < 0 || selectedIndex >= items.length) {
+      return;
+    }
+    const item = items[selectedIndex];
+    if (item) {
+      await copy(item.id);
+    }
+  },
+
   copy: async id => {
     const item = get().items.find(i => i.id === id);
-    if (!item) {return;}
+    if (!item) {
+      return;
+    }
 
     const content =
       item.type === 'text' ? (await getContent(id)) ?? '' : '';
@@ -94,7 +131,7 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
       filePath: item.filePath ?? undefined,
     });
 
-    await AppWindow.hide();
+    await Popover.hide();
   },
 }));
 

@@ -3,4 +3,7 @@
 
 @interface AppDelegate : RCTAppDelegate
 
+- (NSStatusBarButton *)statusItemButton;
+- (NSView *)pasteyRootView;
+
 @end

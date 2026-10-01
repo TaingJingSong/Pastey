@@ -6,3 +6,4 @@
 #import <React/RCTEventEmitter.h>
 #import <React/RCTBridge.h>
 #import <React/RCTUtils.h>
+#import "AppDelegate.h"

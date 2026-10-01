@@ -1,12 +1,13 @@
 #import "AppDelegate.h"
 #import <Cocoa/Cocoa.h>
 #import <React/RCTBundleURLProvider.h>
+#import "Pastey-Swift.h"
 
-@interface AppDelegate () <NSWindowDelegate>
+@interface AppDelegate ()
 
 @property(nonatomic, strong) NSStatusItem *pasteyStatusItem;
-@property(nonatomic, strong) NSWindow *pasteyMainWindow;
 @property(nonatomic, strong) NSMenu *pasteyStatusMenu;
+@property(nonatomic, strong) NSView *pasteyRootViewInstance;
 
 @end
 
@@ -15,21 +16,31 @@
 - (void)applicationDidFinishLaunching:(NSNotification *)notification
 {
   self.moduleName = @"Pastey";
-  self.initialProps = @{};
+  self.initialProps = @{@"mode": @"popover"};
 
   [NSApp setActivationPolicy:NSApplicationActivationPolicyAccessory];
 
-  // React Native creates its window here.
+  // Prevent default standard window from opening
+  self.automaticallyLoadReactNativeWindow = NO;
+
   [super applicationDidFinishLaunching:notification];
 
-  self.pasteyMainWindow = self.window;
-
-  if (self.pasteyMainWindow != nil) {
-    self.pasteyMainWindow.releasedWhenClosed = NO;
-    self.pasteyMainWindow.delegate = self;
-  }
+  // Preload React Native root view so clipboard monitoring and hotkeys activate immediately
+  self.pasteyRootViewInstance = [self.rootViewFactory viewWithModuleName:self.moduleName
+                                                       initialProperties:self.initialProps
+                                                           launchOptions:nil];
 
   [self setupStatusItem];
+}
+
+- (NSStatusBarButton *)statusItemButton
+{
+  return self.pasteyStatusItem.button;
+}
+
+- (NSView *)pasteyRootView
+{
+  return self.pasteyRootViewInstance;
 }
 
 - (BOOL)applicationShouldTerminateAfterLastWindowClosed:
@@ -38,21 +49,10 @@
   return NO;
 }
 
-- (BOOL)windowShouldClose:(NSWindow *)sender
-{
-  if (sender == self.pasteyMainWindow) {
-    // Hide the window while keeping React Native mounted.
-    [sender orderOut:nil];
-    return NO;
-  }
-
-  return YES;
-}
-
 - (BOOL)applicationShouldHandleReopen:(NSApplication *)sender
-                   hasVisibleWindows:(BOOL)flag
+                    hasVisibleWindows:(BOOL)flag
 {
-  [self showMainWindow:nil];
+  [PopoverModule togglePopover];
   return YES;
 }
 
@@ -88,12 +88,12 @@
   NSMenu *menu = [[NSMenu alloc] initWithTitle:@"Pastey"];
   menu.autoenablesItems = NO;
 
-  NSMenuItem *showItem =
-      [[NSMenuItem alloc] initWithTitle:@"Show Pastey"
-                                action:@selector(showMainWindow:)
+  NSMenuItem *toggleItem =
+      [[NSMenuItem alloc] initWithTitle:@"Toggle Pastey"
+                                action:@selector(togglePopoverAction:)
                          keyEquivalent:@""];
-  showItem.target = self;
-  [menu addItem:showItem];
+  toggleItem.target = self;
+  [menu addItem:toggleItem];
 
   [menu addItem:[NSMenuItem separatorItem]];
 
@@ -119,26 +119,13 @@
   if (isRightClick) {
     [self showStatusMenu];
   } else {
-    [self showMainWindow:sender];
+    [PopoverModule togglePopover];
   }
 }
 
-- (void)showMainWindow:(id)sender
+- (void)togglePopoverAction:(id)sender
 {
-  NSWindow *window = self.pasteyMainWindow;
-
-  if (window == nil) {
-    return;
-  }
-
-  [NSApp unhideWithoutActivation];
-
-  if (window.isMiniaturized) {
-    [window deminiaturize:nil];
-  }
-
-  [window makeKeyAndOrderFront:nil];
-  [NSApp activateIgnoringOtherApps:YES];
+  [PopoverModule togglePopover];
 }
 
 - (void)showStatusMenu
@@ -154,7 +141,7 @@
       popUpMenuPositioningItem:nil
                     atLocation:NSMakePoint(NSMinX(button.bounds),
                                            NSMinY(button.bounds))
-                        inView:button];
+                         inView:button];
 }
 
 - (void)quitApp:(id)sender

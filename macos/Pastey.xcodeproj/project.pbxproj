@@ -23,6 +23,8 @@
 		52891D5E306CF11200A83237 /* PasteySQLite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52891D5C306CF11200A83237 /* PasteySQLite.swift */; };
 		52E2353B306CC6920025259A /* PasteyModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 52E23539306CC6920025259A /* PasteyModule.m */; };
 		52E2353C306CC6920025259A /* PasteyModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52E2353A306CC6920025259A /* PasteyModule.swift */; };
+		524BF0AB306DF89F00C25727 /* PopoverModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524BF0AC306DF89F00C25727 /* PopoverModule.swift */; };
+		524BF0AD306DF89F00C25727 /* PopoverModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 524BF0AE306DF89F00C25727 /* PopoverModule.m */; };
 		537BE2C8BF4D0F241234666A /* libPods-Pastey-macOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EA4C605595D9306B025162B4 /* libPods-Pastey-macOS.a */; };
 		77A031C5B7E1473497240F9E /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 59E14CBFF628E09B42D885AA /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
@@ -49,6 +51,8 @@
 		52891D5C306CF11200A83237 /* PasteySQLite.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteySQLite.swift; sourceTree = "<group>"; };
 		52E23539306CC6920025259A /* PasteyModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PasteyModule.m; sourceTree = "<group>"; };
 		52E2353A306CC6920025259A /* PasteyModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteyModule.swift; sourceTree = "<group>"; };
+		524BF0AC306DF89F00C25727 /* PopoverModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopoverModule.swift; sourceTree = "<group>"; };
+		524BF0AE306DF89F00C25727 /* PopoverModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PopoverModule.m; sourceTree = "<group>"; };
 		52E2353D306CC69E0025259A /* Pastey-macOS-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Pastey-macOS-Bridging-Header.h"; sourceTree = "<group>"; };
 		59E14CBFF628E09B42D885AA /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		6C826AF4A1B6BE3295B78554 /* Pods-Pastey-macOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Pastey-macOS.debug.xcconfig"; path = "Target Support Files/Pods-Pastey-macOS/Pods-Pastey-macOS.debug.xcconfig"; sourceTree = "<group>"; };
@@ -99,6 +103,8 @@
 				52891D5C306CF11200A83237 /* PasteySQLite.swift */,
 				52E23539306CC6920025259A /* PasteyModule.m */,
 				52E2353A306CC6920025259A /* PasteyModule.swift */,
+				524BF0AE306DF89F00C25727 /* PopoverModule.m */,
+				524BF0AC306DF89F00C25727 /* PopoverModule.swift */,
 				5142014B2437B4B30078DB4F /* AppDelegate.h */,
 				5142014C2437B4B30078DB4F /* AppDelegate.mm */,
 				514201512437B4B40078DB4F /* Assets.xcassets */,
@@ -357,6 +363,8 @@
 				52E2353C306CC6920025259A /* PasteyModule.swift in Sources */,
 				52891D5D306CF11200A83237 /* PasteySQLite.m in Sources */,
 				52891D5E306CF11200A83237 /* PasteySQLite.swift in Sources */,
+				524BF0AB306DF89F00C25727 /* PopoverModule.swift in Sources */,
+				524BF0AD306DF89F00C25727 /* PopoverModule.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
