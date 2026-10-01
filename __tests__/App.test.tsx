@@ -212,3 +212,85 @@ it('clicking item preview button (>) opens auxiliary preview popup window', asyn
   expect(popoverModule.hidePreview).toHaveBeenCalled();
   expect(usePreviewStore.getState().isOpen).toBe(false);
 });
+
+it('hover preview is transient (closes on mouse leave), while click preview remains persistent', async () => {
+  const popoverModule = NativeModules.PopoverModule as unknown as {
+    showPreview: jest.Mock<() => Promise<boolean>>;
+    hidePreview: jest.Mock<() => Promise<boolean>>;
+  };
+
+  act(() => {
+    useHistoryStore.setState({
+      items: [
+        { id: 301, hash: 'h301', type: 'text', preview: 'hover preview item', filePath: null, createdAt: 1, pinned: 0 },
+      ],
+      selectedIndex: 0,
+    });
+  });
+
+  let tree: any;
+  await act(async () => {
+    tree = renderer.create(<App />);
+    await new Promise(resolve => setTimeout(resolve, 50));
+  });
+  currentTree = tree;
+
+  const historyItem = tree.root.findByProps({ testID: 'history-item-301' });
+
+  // 1. Simulate hover opening preview (transient)
+  await act(async () => {
+    await usePreviewStore.getState().openPreview(useHistoryStore.getState().items[0], false);
+  });
+  expect(popoverModule.showPreview).toHaveBeenCalled();
+  expect(usePreviewStore.getState().isOpen).toBe(true);
+  expect(usePreviewStore.getState().isPersistent).toBe(false);
+
+  // Mouse leaves history item, but enters the preview popup window within the 300ms grace period
+  await act(async () => {
+    historyItem.props.onHoverOut();
+    // Simulate user moving mouse towards the preview popup within 50ms
+    await new Promise(resolve => setTimeout(resolve, 50));
+    // User moves mouse over preview popup window
+    usePreviewStore.getState().setPreviewHovered(true);
+    // Wait past the original 300ms timer
+    await new Promise(resolve => setTimeout(resolve, 350));
+  });
+
+  // Preview remains open while hovered on popup window!
+  expect(usePreviewStore.getState().isOpen).toBe(true);
+  expect(usePreviewStore.getState().isPreviewHovered).toBe(true);
+
+  // When user moves mouse out of preview popup window
+  await act(async () => {
+    usePreviewStore.getState().setPreviewHovered(false);
+    // Wait for the 300ms grace delay to expire
+    await new Promise(resolve => setTimeout(resolve, 350));
+  });
+
+  // Now transient preview is closed ("pupouts")
+  expect(usePreviewStore.getState().isOpen).toBe(false);
+
+  // 2. Click `>` to open persistent preview
+  const itemPreviewBtn = tree.root.findByProps({ testID: 'preview-button-301' });
+  await act(async () => {
+    itemPreviewBtn.props.onPress();
+    await new Promise(resolve => setTimeout(resolve, 30));
+  });
+  expect(usePreviewStore.getState().isOpen).toBe(true);
+  expect(usePreviewStore.getState().isPersistent).toBe(true);
+
+  // Mouse leave does NOT close persistent preview even after grace timer
+  await act(async () => {
+    historyItem.props.onHoverOut();
+    await new Promise(resolve => setTimeout(resolve, 350));
+  });
+  expect(usePreviewStore.getState().isOpen).toBe(true);
+  expect(usePreviewStore.getState().isPersistent).toBe(true);
+
+  // Clean up
+  await act(async () => {
+    await usePreviewStore.getState().closePreview();
+  });
+});
+
+

@@ -14,6 +14,8 @@ interface Props {
   onTogglePin: () => void;
   onPreview?: () => void;
   onPreviewHover?: () => void;
+  onPreviewHoverEnd?: () => void;
+  onPreviewHoverStart?: () => void;
 }
 
 export function HistoryItem({
@@ -27,6 +29,8 @@ export function HistoryItem({
   onTogglePin,
   onPreview,
   onPreviewHover,
+  onPreviewHoverEnd,
+  onPreviewHoverStart,
 }: Props) {
   const { colors } = useTheme();
   const [isHovered, setIsHovered] = useState(false);
@@ -43,6 +47,7 @@ export function HistoryItem({
 
   const handleHoverIn = () => {
     setIsHovered(true);
+    onPreviewHoverStart?.();
     if (hoverTimerRef.current) {
       clearTimeout(hoverTimerRef.current);
     }
@@ -57,6 +62,7 @@ export function HistoryItem({
       clearTimeout(hoverTimerRef.current);
       hoverTimerRef.current = null;
     }
+    onPreviewHoverEnd?.();
   };
 
   const showActions = isPinned || isHovered || selected || isCurrentPreviewItem;

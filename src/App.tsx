@@ -189,6 +189,8 @@ function App(props: AppProps): React.JSX.Element {
           onTogglePin={toggle}
           onPreview={item => togglePreview(item)}
           onPreviewHover={item => openPreview(item)}
+          onPreviewHoverEnd={item => usePreviewStore.getState().closeHoverPreview(item.id)}
+          onPreviewHoverStart={item => usePreviewStore.getState().cancelCloseHoverTimer(item.id)}
         />
       )}
     </View>

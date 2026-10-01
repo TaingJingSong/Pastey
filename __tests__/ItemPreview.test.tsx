@@ -146,4 +146,44 @@ it('renders PreviewApp root with item from previewStore', () => {
   const tree = renderer.create(<PreviewApp />);
   const fullText = tree.root.findByProps({ testID: 'preview-full-text' });
   expect(fullText.props.children).toBe('PreviewApp content');
+  act(() => {
+    tree.unmount();
+  });
 });
+
+it('tracks hover in and hover out on PreviewApp container', async () => {
+  const { PreviewApp } = require('../src/PreviewApp');
+  const { usePreviewStore } = require('../src/store/previewStore');
+
+  act(() => {
+    usePreviewStore.setState({
+      item: mockTextItem,
+      fullContent: 'Hover tracking content',
+      isOpen: true,
+      isPreviewHovered: false,
+    });
+  });
+
+  const tree = renderer.create(<PreviewApp />);
+  const root = tree.root.findByProps({ testID: 'pastey-preview-root' });
+
+  // Hover in on preview popup window
+  act(() => {
+    root.props.onMouseEnter();
+  });
+  expect(usePreviewStore.getState().isPreviewHovered).toBe(true);
+
+  // Hover out of preview popup window
+  act(() => {
+    root.props.onMouseLeave();
+  });
+  expect(usePreviewStore.getState().isPreviewHovered).toBe(false);
+
+  // Cleanup: unmount tree and close preview to cancel any pending timer
+  await act(async () => {
+    tree.unmount();
+    await usePreviewStore.getState().closePreview();
+  });
+});
+
+

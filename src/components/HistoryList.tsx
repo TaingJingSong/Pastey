@@ -16,6 +16,8 @@ interface Props {
   onTogglePin: (id: number) => void;
   onPreview?: (item: ClipItem) => void;
   onPreviewHover?: (item: ClipItem) => void;
+  onPreviewHoverEnd?: (item: ClipItem) => void;
+  onPreviewHoverStart?: (item: ClipItem) => void;
 }
 
 function ItemSeparator() {
@@ -34,6 +36,8 @@ export function HistoryList({
   onTogglePin,
   onPreview,
   onPreviewHover,
+  onPreviewHoverEnd,
+  onPreviewHoverStart,
 }: Props) {
   const listRef = useRef<FlashList<ClipItem>>(null);
 
@@ -73,6 +77,8 @@ export function HistoryList({
             onTogglePin={() => onTogglePin(item.id)}
             onPreview={onPreview ? () => onPreview(item) : undefined}
             onPreviewHover={onPreviewHover ? () => onPreviewHover(item) : undefined}
+            onPreviewHoverEnd={onPreviewHoverEnd ? () => onPreviewHoverEnd(item) : undefined}
+            onPreviewHoverStart={onPreviewHoverStart ? () => onPreviewHoverStart(item) : undefined}
           />
         )}
       />

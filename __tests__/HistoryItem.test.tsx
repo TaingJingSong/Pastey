@@ -236,3 +236,55 @@ it('triggers onPreviewHover when hovered for 2 seconds', () => {
   });
   jest.useRealTimers();
 });
+
+it('triggers onPreviewHoverEnd immediately when mouse leaves', () => {
+  const onPreviewHoverEndMock = jest.fn();
+
+  const tree = renderer.create(
+    <HistoryItem
+      item={mockItem}
+      onCopy={jest.fn()}
+      onDelete={jest.fn()}
+      onTogglePin={jest.fn()}
+      onPreviewHoverEnd={onPreviewHoverEndMock}
+    />
+  );
+
+  const row = tree.root.findByProps({ testID: 'history-item-1' });
+
+  // Hover in
+  act(() => {
+    row.props.onHoverIn();
+  });
+  expect(onPreviewHoverEndMock).not.toHaveBeenCalled();
+
+  // Hover out
+  act(() => {
+    row.props.onHoverOut();
+  });
+  expect(onPreviewHoverEndMock).toHaveBeenCalledTimes(1);
+});
+
+it('triggers onPreviewHoverStart immediately when mouse enters', () => {
+  const onPreviewHoverStartMock = jest.fn();
+
+  const tree = renderer.create(
+    <HistoryItem
+      item={mockItem}
+      onCopy={jest.fn()}
+      onDelete={jest.fn()}
+      onTogglePin={jest.fn()}
+      onPreviewHoverStart={onPreviewHoverStartMock}
+    />
+  );
+
+  const row = tree.root.findByProps({ testID: 'history-item-1' });
+
+  // Hover in
+  act(() => {
+    row.props.onHoverIn();
+  });
+  expect(onPreviewHoverStartMock).toHaveBeenCalledTimes(1);
+});
+
+
