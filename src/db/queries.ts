@@ -35,8 +35,28 @@ export async function insertClip(payload: {
   preview: string;
   content: string;
   filePath?: string;
+  bundleId?: string;
   createdAt: number;
 }) {
+  if (payload.bundleId) {
+    const excludedApps = await readSetting('excludedApps');
+    const target = payload.bundleId.trim().toLowerCase();
+    if (
+      Array.isArray(excludedApps) &&
+      excludedApps.some(app => app.trim().toLowerCase() === target)
+    ) {
+      if (payload.filePath) {
+        const remaining = await sqlite.execute<{ filePath: string | null }>(
+          'SELECT file_path AS filePath FROM items WHERE file_path IS NOT NULL'
+        );
+        await ClipboardMonitor.syncImages(
+          remaining.map(row => row.filePath).filter((p): p is string => !!p)
+        );
+      }
+      return;
+    }
+  }
+
   const rows = await sqlite.execute<{ id: number }>(
     `INSERT INTO items (hash, type, preview, file_path, created_at)
      VALUES (?, ?, ?, ?, ?)

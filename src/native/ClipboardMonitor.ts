@@ -6,6 +6,7 @@ export interface ClipboardPayload {
   preview: string;
   content: string;
   filePath?: string;
+  bundleId?: string;
   createdAt: number;
 }
 

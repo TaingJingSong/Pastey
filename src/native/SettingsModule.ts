@@ -19,11 +19,21 @@ const native: SettingsNative = maybeNative;
 export const DEFAULT_SETTINGS = {
   maxItems: 500,
   maxAgeDays: 30,
-} as const;
+  launchAtLogin: false,
+  excludedApps: [
+    'com.1password.1password',
+    'com.agilebits.onepassword',
+    'com.bitwarden.desktop',
+    'org.keepassxc.keepassxc',
+    'com.apple.keychainaccess',
+  ] as string[],
+};
 
 export type Settings = {
   maxItems: number;
   maxAgeDays: number;
+  launchAtLogin: boolean;
+  excludedApps: string[];
 };
 
 export type SettingsKey = keyof Settings;
@@ -52,7 +62,7 @@ export async function readAllSettings(): Promise<Partial<Settings>> {
   for (const key of Object.keys(DEFAULT_SETTINGS) as SettingsKey[]) {
     const value = stored[key];
     if (value !== undefined && value !== null) {
-      result[key] = value;
+      result[key] = value as any;
     }
   }
 

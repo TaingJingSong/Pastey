@@ -5,7 +5,7 @@ import Foundation
 class SettingsWindowModule: NSObject {
 
   private static let moduleName = "PasteySettings"
-  private static let windowSize = NSSize(width: 480, height: 340)
+  private static let windowSize = NSSize(width: 480, height: 460)
 
   @objc static var shared: SettingsWindowModule?
 

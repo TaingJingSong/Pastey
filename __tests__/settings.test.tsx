@@ -9,7 +9,7 @@ import { NativeModules, TextInput } from 'react-native';
 import renderer, { act } from 'react-test-renderer';
 import SettingsApp from '../src/SettingsApp';
 import { useSettingsStore } from '../src/store/settingsStore';
-import { pruneOldItems } from '../src/db/queries';
+import { insertClip, pruneOldItems } from '../src/db/queries';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -20,11 +20,11 @@ const settings = NativeModules.SettingsModule as unknown as {
 };
 
 const sql = NativeModules.PasteySQLite as unknown as {
-  execute: jest.Mock<(statement: string, params?: unknown[]) => Promise<string>>;
+  execute: jest.Mock<(statement: string, params?: unknown[]) => Promise<any>>;
 };
 
 function currentMaxItemsInput(tree: renderer.ReactTestRenderer): any {
-  return tree.root.findByType(TextInput as React.ComponentType<any>);
+  return tree.root.findByProps({ testID: 'max-items-input' });
 }
 
 let mounted: renderer.ReactTestRenderer | undefined;
@@ -54,7 +54,18 @@ beforeEach(() => {
   settings.get.mockImplementation(() => Promise.resolve(null));
   act(() => {
     useSettingsStore.setState({
-      values: { maxItems: 500, maxAgeDays: 30 },
+      values: {
+        maxItems: 500,
+        maxAgeDays: 30,
+        launchAtLogin: false,
+        excludedApps: [
+          'com.1password.1password',
+          'com.agilebits.onepassword',
+          'com.bitwarden.desktop',
+          'org.keepassxc.keepassxc',
+          'com.apple.keychainaccess',
+        ],
+      },
       ready: false,
     });
   });
@@ -66,6 +77,8 @@ it('SettingsApp renders and loads defaults from the settings store', async () =>
   expect(tree.toJSON()).toBeTruthy();
   expect(useSettingsStore.getState().ready).toBe(true);
   expect(useSettingsStore.getState().values.maxItems).toBe(500);
+  expect(useSettingsStore.getState().values.launchAtLogin).toBe(false);
+  expect(useSettingsStore.getState().values.excludedApps).toContain('com.1password.1password');
 });
 
 it('committing a value writes it through to the native settings module', async () => {
@@ -100,11 +113,91 @@ it('clamps out-of-range input instead of persisting it', async () => {
 });
 
 it('loads a persisted value on mount', async () => {
-  settings.all.mockResolvedValue({ maxItems: 250 });
+  settings.all.mockResolvedValue({ maxItems: 250, launchAtLogin: true });
 
   await mount();
 
   expect(useSettingsStore.getState().values.maxItems).toBe(250);
+  expect(useSettingsStore.getState().values.launchAtLogin).toBe(true);
+});
+
+it('toggling launchAtLogin persists to settings module', async () => {
+  const tree = await mount();
+  const loginSwitch = tree.root.findByProps({ testID: 'launch-at-login-switch' });
+
+  await act(async () => {
+    loginSwitch.props.onValueChange(true);
+    await new Promise(resolve => setTimeout(resolve, 50));
+  });
+
+  expect(settings.set).toHaveBeenCalledWith('launchAtLogin', true);
+  expect(useSettingsStore.getState().values.launchAtLogin).toBe(true);
+});
+
+it('adds and removes excluded applications in settings', async () => {
+  const tree = await mount();
+  const appInputs = tree.root.findAllByType(TextInput as React.ComponentType<any>);
+  const addAppInput = appInputs.find(i => i.props.placeholder?.includes('keychainaccess'))!;
+  const addButton = tree.root.findByProps({ testID: 'add-excluded-app-button' });
+
+  await act(async () => {
+    addAppInput.props.onChangeText('com.example.secretapp');
+  });
+  await act(async () => {
+    addButton.props.onPress();
+    await new Promise(resolve => setTimeout(resolve, 50));
+  });
+
+  expect(settings.set).toHaveBeenCalledWith(
+    'excludedApps',
+    expect.arrayContaining(['com.example.secretapp'])
+  );
+  expect(useSettingsStore.getState().values.excludedApps).toContain('com.example.secretapp');
+
+  const removeBtn = tree.root.findByProps({ testID: 'remove-app-com.example.secretapp' });
+  await act(async () => {
+    removeBtn.props.onPress();
+    await new Promise(resolve => setTimeout(resolve, 50));
+  });
+
+  expect(useSettingsStore.getState().values.excludedApps).not.toContain('com.example.secretapp');
+});
+
+it('insertClip ignores clips from excluded applications', async () => {
+  settings.get.mockImplementation((key: string) =>
+    Promise.resolve(key === 'excludedApps' ? ['com.1password.1password'] : null)
+  );
+
+  await insertClip({
+    hash: 'hash-pass-123',
+    type: 'text',
+    preview: 'master_password',
+    content: 'master_password',
+    bundleId: 'com.1password.1password',
+    createdAt: Date.now(),
+  });
+
+  expect(sql.execute).not.toHaveBeenCalled();
+});
+
+it('insertClip saves clips from non-excluded applications', async () => {
+  settings.get.mockImplementation((key: string) =>
+    Promise.resolve(key === 'excludedApps' ? ['com.1password.1password'] : null)
+  );
+  sql.execute.mockResolvedValue(JSON.stringify([{ id: 1 }]));
+
+  await insertClip({
+    hash: 'hash-code-456',
+    type: 'text',
+    preview: 'console.log("hello")',
+    content: 'console.log("hello")',
+    bundleId: 'com.microsoft.VSCode',
+    createdAt: Date.now(),
+  });
+
+  expect(sql.execute).toHaveBeenCalled();
+  const [statement] = sql.execute.mock.calls[0] as [string, any[]];
+  expect(statement).toContain('INSERT INTO items');
 });
 
 it('pruneOldItems takes its limits from the settings store, not constants', async () => {
