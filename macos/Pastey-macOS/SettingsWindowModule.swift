@@ -22,7 +22,9 @@ class SettingsWindowModule: NSObject {
   /// Entry point for the Preferences… menu item.
   @objc static func openSettings() {
     DispatchQueue.main.async {
-      shared?.present()
+      let module = shared ?? SettingsWindowModule()
+      shared = module
+      module.present()
     }
   }
 
@@ -44,7 +46,10 @@ class SettingsWindowModule: NSObject {
   }
 
   private func present() {
-    guard let window = self.window ?? self.makeWindow() else { return }
+    guard let window = self.window ?? self.makeWindow() else {
+      NSLog("[Pastey] SettingsWindowModule.present: makeWindow failed")
+      return
+    }
     self.window = window
 
     NSApp.activate(ignoringOtherApps: true)

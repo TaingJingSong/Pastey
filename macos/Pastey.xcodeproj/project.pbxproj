@@ -456,7 +456,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.pastey.app;
 				PRODUCT_NAME = Pastey;
 				SDKROOT = macosx;
 				SWIFT_OBJC_BRIDGING_HEADER = "Pastey-macOS/Pastey-macOS-Bridging-Header.h";
@@ -480,7 +480,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.pastey.app;
 				PRODUCT_NAME = Pastey;
 				SDKROOT = macosx;
 				SWIFT_OBJC_BRIDGING_HEADER = "Pastey-macOS/Pastey-macOS-Bridging-Header.h";

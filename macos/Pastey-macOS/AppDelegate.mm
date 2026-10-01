@@ -73,6 +73,11 @@
 
 - (NSView *)pasteyRootView
 {
+  if (self.pasteyRootViewInstance == nil) {
+    self.pasteyRootViewInstance = [self.rootViewFactory viewWithModuleName:self.moduleName
+                                                         initialProperties:self.initialProps
+                                                             launchOptions:nil];
+  }
   return self.pasteyRootViewInstance;
 }
 
@@ -126,6 +131,22 @@
   [button sendActionOn:
       (NSEventMaskLeftMouseUp | NSEventMaskRightMouseUp)];
 
+  // Guarantee that right clicks on the status button always present the menu
+  [NSEvent addLocalMonitorForEventsMatchingMask:(NSEventMaskRightMouseDown | NSEventMaskRightMouseUp)
+                                       handler:^NSEvent *(NSEvent *event) {
+    NSStatusBarButton *statusButton = self.pasteyStatusItem.button;
+    if (statusButton != nil && event.window == statusButton.window) {
+      NSPoint mouseLoc = [statusButton convertPoint:event.locationInWindow fromView:nil];
+      if (NSPointInRect(mouseLoc, statusButton.bounds)) {
+        if (event.type == NSEventTypeRightMouseDown) {
+          [self showStatusMenu];
+        }
+        return nil;
+      }
+    }
+    return event;
+  }];
+
   NSMenu *menu = [[NSMenu alloc] initWithTitle:@"Pastey"];
   menu.autoenablesItems = NO;
 
@@ -164,6 +185,7 @@
   BOOL isRightClick =
       event != nil &&
       (event.type == NSEventTypeRightMouseUp ||
+       event.type == NSEventTypeRightMouseDown ||
        (event.modifierFlags & NSEventModifierFlagControl) != 0);
 
   if (isRightClick) {

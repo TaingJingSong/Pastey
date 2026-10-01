@@ -42,18 +42,24 @@ class PopoverModule: RCTEventEmitter {
 
   @objc static func togglePopover() {
     DispatchQueue.main.async {
-      shared?.toggleInternal()
+      let module = shared ?? PopoverModule()
+      shared = module
+      module.toggleInternal()
     }
   }
 
   @objc func toggleInternal() {
     guard let appDelegate = NSApp.delegate as? AppDelegate,
           let button = appDelegate.statusItemButton() else {
+      NSLog("[Pastey] PopoverModule.toggleInternal: appDelegate or button unavailable")
       return
     }
 
     self.ensurePopover()
-    guard let popover = self.popover else { return }
+    guard let popover = self.popover else {
+      NSLog("[Pastey] PopoverModule.toggleInternal: popover could not be created")
+      return
+    }
 
     let now = ProcessInfo.processInfo.systemUptime
     if now - self.lastCloseTime < 0.2 {
