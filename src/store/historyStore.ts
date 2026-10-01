@@ -10,6 +10,7 @@ import {
   searchClips,
   getContent,
 } from '../db/queries';
+import { Hotkey, Key, Mod } from '../native/HotkeyModule';
 import { initSchema } from '../db/schema';
 
 interface HistoryState {
@@ -27,6 +28,7 @@ interface HistoryState {
 
 let subscription: { remove: () => void } | null = null;
 let starting = false;
+let hotkeySub: { remove: () => void } | null = null;
 
 export const useHistoryStore = create<HistoryState>((set, get) => ({
   items: [],
@@ -46,6 +48,10 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
     ClipboardMonitor.start();
     subscription = ClipboardMonitor.subscribe(payload => {
       get().onClipboard(payload);
+    });
+    await Hotkey.register(Key.V, Mod.cmd || Mod.shift);
+    hotkeySub = Hotkey.subscribe(() => {
+      AppWindow.toggle();
     });
   },
 
@@ -95,5 +101,8 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
 export function disposeHistory() {
   subscription?.remove();
   subscription = null;
+  hotkeySub?.remove();
+  hotkeySub = null;
   ClipboardMonitor.stop();
+  Hotkey.unregister();
 }

@@ -16,6 +16,8 @@
 		5215C3D8306D772B001D9975 /* ClipboardMonitor.m in Sources */ = {isa = PBXBuildFile; fileRef = 5215C3D3306D772B001D9975 /* ClipboardMonitor.m */; };
 		5215C3D9306D772B001D9975 /* ClipboardMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5215C3D4306D772B001D9975 /* ClipboardMonitor.swift */; };
 		5215C3DA306D772B001D9975 /* WindowModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 5215C3D5306D772B001D9975 /* WindowModule.m */; };
+		524BF0A9306DF89F00C25727 /* HotKeyModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524BF0A8306DF89F00C25727 /* HotKeyModule.swift */; };
+		524BF0AA306DF89F00C25727 /* HotKeyModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 524BF0A7306DF89F00C25727 /* HotKeyModule.m */; };
 		52891D5A306CF0B900A83237 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 52891D59306CF0B900A83237 /* libsqlite3.tbd */; };
 		52891D5D306CF11200A83237 /* PasteySQLite.m in Sources */ = {isa = PBXBuildFile; fileRef = 52891D5B306CF11200A83237 /* PasteySQLite.m */; };
 		52891D5E306CF11200A83237 /* PasteySQLite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52891D5C306CF11200A83237 /* PasteySQLite.swift */; };
@@ -40,6 +42,8 @@
 		5215C3D4306D772B001D9975 /* ClipboardMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardMonitor.swift; sourceTree = "<group>"; };
 		5215C3D5306D772B001D9975 /* WindowModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WindowModule.m; sourceTree = "<group>"; };
 		5215C3D6306D772B001D9975 /* WindowModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowModule.swift; sourceTree = "<group>"; };
+		524BF0A7306DF89F00C25727 /* HotKeyModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HotKeyModule.m; sourceTree = "<group>"; };
+		524BF0A8306DF89F00C25727 /* HotKeyModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotKeyModule.swift; sourceTree = "<group>"; };
 		52891D59306CF0B900A83237 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk/usr/lib/libsqlite3.tbd; sourceTree = DEVELOPER_DIR; };
 		52891D5B306CF11200A83237 /* PasteySQLite.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PasteySQLite.m; sourceTree = "<group>"; };
 		52891D5C306CF11200A83237 /* PasteySQLite.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteySQLite.swift; sourceTree = "<group>"; };
@@ -85,6 +89,8 @@
 		5142014A2437B4B30078DB4F /* Pastey-macOS */ = {
 			isa = PBXGroup;
 			children = (
+				524BF0A7306DF89F00C25727 /* HotKeyModule.m */,
+				524BF0A8306DF89F00C25727 /* HotKeyModule.swift */,
 				5215C3D3306D772B001D9975 /* ClipboardMonitor.m */,
 				5215C3D4306D772B001D9975 /* ClipboardMonitor.swift */,
 				5215C3D5306D772B001D9975 /* WindowModule.m */,
@@ -342,6 +348,8 @@
 				514201582437B4B40078DB4F /* main.m in Sources */,
 				5215C3D7306D772B001D9975 /* WindowModule.swift in Sources */,
 				5215C3D8306D772B001D9975 /* ClipboardMonitor.m in Sources */,
+				524BF0A9306DF89F00C25727 /* HotKeyModule.swift in Sources */,
+				524BF0AA306DF89F00C25727 /* HotKeyModule.m in Sources */,
 				5215C3D9306D772B001D9975 /* ClipboardMonitor.swift in Sources */,
 				5215C3DA306D772B001D9975 /* WindowModule.m in Sources */,
 				5142014D2437B4B30078DB4F /* AppDelegate.mm in Sources */,
