@@ -85,7 +85,7 @@ it('calls onCopy and shows Copied feedback when copy button is pressed', () => {
 
   expect(copyMock).toHaveBeenCalledWith(10);
   const copyBtnText = copyBtn.findByType(Text);
-  expect(copyBtnText.props.children).toBe('Copied ✓');
+  expect(copyBtnText.props.children).toBe('Copied');
 
   act(() => {
     tree.unmount();

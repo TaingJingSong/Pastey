@@ -1,7 +1,7 @@
 import 'react-native';
 import React from 'react';
 import { it, expect, jest, beforeEach, afterEach } from '@jest/globals';
-import { Alert, NativeModules } from 'react-native';
+import { NativeModules } from 'react-native';
 import renderer, { act } from 'react-test-renderer';
 import App from '../src/App';
 import { useHistoryStore } from '../src/store/historyStore';
@@ -73,7 +73,7 @@ it('clicking settings quick icon calls SettingsWindow.open()', async () => {
   expect(settingsWindow.open).toHaveBeenCalledTimes(1);
 });
 
-it('clicking preview lines quick icon cycles previewLines setting', async () => {
+it('renders only the settings icon in the action bar, omitting quick clear and preview lines', async () => {
   let tree: any;
   await act(async () => {
     tree = renderer.create(<App />);
@@ -81,47 +81,14 @@ it('clicking preview lines quick icon cycles previewLines setting', async () => 
   });
   currentTree = tree;
 
-  expect(useSettingsStore.getState().values.previewLines).toBe(1);
+  const settingsBtn = tree.root.findByProps({ testID: 'quick-settings-button' });
+  expect(settingsBtn).toBeDefined();
 
-  const toggleBtn = tree.root.findByProps({ testID: 'quick-preview-lines-button' });
-  await act(async () => {
-    toggleBtn.props.onPress();
-    await new Promise(resolve => setTimeout(resolve, 30));
-  });
+  const clearButtons = tree.root.findAllByProps({ testID: 'quick-clear-button' });
+  expect(clearButtons.length).toBe(0);
 
-  expect(useSettingsStore.getState().values.previewLines).toBe(2);
-
-  await act(async () => {
-    toggleBtn.props.onPress();
-    await new Promise(resolve => setTimeout(resolve, 30));
-  });
-
-  expect(useSettingsStore.getState().values.previewLines).toBe(3);
-
-  await act(async () => {
-    toggleBtn.props.onPress();
-    await new Promise(resolve => setTimeout(resolve, 30));
-  });
-
-  expect(useSettingsStore.getState().values.previewLines).toBe(1);
-});
-
-it('clicking clear quick icon opens Alert dialog', async () => {
-  const alertSpy = jest.spyOn(Alert, 'alert');
-  let tree: any;
-  await act(async () => {
-    tree = renderer.create(<App />);
-    await new Promise(resolve => setTimeout(resolve, 50));
-  });
-  currentTree = tree;
-
-  const clearBtn = tree.root.findByProps({ testID: 'quick-clear-button' });
-  await act(async () => {
-    clearBtn.props.onPress();
-  });
-
-  expect(alertSpy).toHaveBeenCalled();
-  expect(alertSpy.mock.calls[0][0]).toBe('Clear Clipboard History');
+  const previewButtons = tree.root.findAllByProps({ testID: 'quick-preview-lines-button' });
+  expect(previewButtons.length).toBe(0);
 });
 
 it('arrow keys navigate item selection in store and list', async () => {

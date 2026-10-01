@@ -102,9 +102,6 @@ export function ItemPreview({
   const textBody = content ?? item.preview;
   const linesCount = textBody ? textBody.split('\n').length : 0;
   const charsCount = textBody ? textBody.length : 0;
-  const wordsCount = textBody
-    ? textBody.trim().split(/\s+/).filter(Boolean).length
-    : 0;
 
   const formattedDate = new Date(item.createdAt).toLocaleString(undefined, {
     month: 'short',
@@ -140,23 +137,17 @@ export function ItemPreview({
         ]}
       >
         <View style={styles.headerLeft}>
-          <View
-            style={[
-              styles.typeBadge,
-              { backgroundColor: colors.badgeBg },
-            ]}
-          >
-            <Text style={[styles.typeBadgeText, { color: colors.badgeText }]}>
-              {isImage ? 'Image' : 'Text'}
-            </Text>
-          </View>
+          <Text style={[styles.typeText, { color: colors.text }]}>
+            {isImage ? 'Image' : 'Text'}
+          </Text>
+          <Text style={[styles.dotSeparator, { color: colors.secondaryText }]}>·</Text>
           <Text
             style={[styles.metaText, { color: colors.secondaryText }]}
             numberOfLines={1}
           >
             {isImage
               ? formattedDate
-              : `${linesCount} ${linesCount === 1 ? 'line' : 'lines'} • ${charsCount} chars • ${wordsCount} words`}
+              : `${linesCount} ${linesCount === 1 ? 'line' : 'lines'} · ${charsCount} chars`}
           </Text>
         </View>
 
@@ -202,7 +193,7 @@ export function ItemPreview({
                 { color: copied ? colors.accentText : colors.text },
               ]}
             >
-              {copied ? 'Copied ✓' : 'Copy'}
+              {copied ? 'Copied' : 'Copy'}
             </Text>
           </Pressable>
 
@@ -218,7 +209,7 @@ export function ItemPreview({
               accessibilityLabel="Close preview"
             >
               <Text style={[styles.closeIcon, { color: colors.secondaryText }]}>
-                ✕
+                ×
               </Text>
             </Pressable>
           )}
@@ -271,7 +262,7 @@ export function ItemPreview({
           ]}
         >
           <Text style={[styles.footerHint, { color: colors.secondaryText }]}>
-            ↑ / ↓ navigate • Esc to close
+            ↑ / ↓ navigate · Esc to close
           </Text>
         </View>
       )}
@@ -317,18 +308,16 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
     marginRight: 8,
   },
-  typeBadge: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  typeBadgeText: {
-    fontSize: 11,
+  typeText: {
+    fontSize: 12,
     fontWeight: '600',
-    textTransform: 'uppercase',
+  },
+  dotSeparator: {
+    fontSize: 11,
+    opacity: 0.6,
   },
   metaText: {
     fontSize: 11,

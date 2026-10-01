@@ -29,6 +29,7 @@ export interface ThemeColors {
   segmentSelectedText: string;
   hoverBg: string;
   iconBtnHover: string;
+  iconBtnActive: string;
   iconBtnText: string;
   previewBg: string;
   previewBorder: string;
@@ -65,6 +66,7 @@ export const lightColors: ThemeColors = {
   segmentSelectedText: '#000000',
   hoverBg: 'rgba(0, 0, 0, 0.05)',
   iconBtnHover: 'rgba(0, 0, 0, 0.08)',
+  iconBtnActive: 'rgba(0, 0, 0, 0.14)',
   iconBtnText: '#636366',
   previewBg: '#f7f7f8',
   previewBorder: '#e5e5ea',
@@ -101,6 +103,7 @@ export const darkColors: ThemeColors = {
   segmentSelectedText: '#ffffff',
   hoverBg: 'rgba(255, 255, 255, 0.08)',
   iconBtnHover: 'rgba(255, 255, 255, 0.12)',
+  iconBtnActive: 'rgba(255, 255, 255, 0.18)',
   iconBtnText: '#aeaeb2',
   previewBg: '#18181a',
   previewBorder: '#38383a',

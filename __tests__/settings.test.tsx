@@ -59,6 +59,7 @@ beforeEach(() => {
         maxAgeDays: 30,
         launchAtLogin: false,
         previewLines: 1,
+        previewLayout: 'popup',
         theme: 'system',
         systemTheme: 'light',
         excludedApps: [

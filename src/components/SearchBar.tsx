@@ -16,14 +16,62 @@ interface Props {
   onTogglePreviewLines?: () => void;
 }
 
+function SearchIcon({ color }: { color: string }) {
+  return (
+    <View style={styles.searchIconWrap} pointerEvents="none">
+      <View style={[styles.searchIconCircle, { borderColor: color }]} />
+      <View style={[styles.searchIconHandle, { backgroundColor: color }]} />
+    </View>
+  );
+}
+
+function SettingsIcon({ color, size = 15 }: { color: string; size?: number }) {
+  const TEETH = [0, 45, 90, 135, 180, 225, 270, 315];
+  const toothWidth = 2;
+  const toothHeight = 2.4;
+  const ringSize = 9.5;
+
+  return (
+    <View style={[styles.settingsWrap, { width: size, height: size }]} pointerEvents="none">
+      {TEETH.map(deg => (
+        <View
+          key={deg}
+          style={[
+            styles.settingsTooth,
+            {
+              width: toothWidth,
+              height: toothHeight,
+              backgroundColor: color,
+              transform: [{ rotate: `${deg}deg` }, { translateY: -5.4 }],
+            },
+          ]}
+        />
+      ))}
+      <View
+        style={[
+          styles.settingsRing,
+          {
+            width: ringSize,
+            height: ringSize,
+            borderRadius: ringSize / 2,
+            borderColor: color,
+          },
+        ]}
+      />
+    </View>
+  );
+}
+
 function ActionIconButton({
   icon,
+  hoveredIcon,
   onPress,
   tooltip,
   testID,
   active = false,
 }: {
-  icon: string;
+  icon: React.ReactNode;
+  hoveredIcon?: React.ReactNode;
   onPress: () => void;
   tooltip: string;
   testID?: string;
@@ -52,14 +100,20 @@ function ActionIconButton({
         pressed && styles.actionBtnPressed,
       ]}
     >
-      <Text
-        style={[
-          styles.actionBtnIcon,
-          { color: active ? colors.text : colors.iconBtnText },
-        ]}
-      >
-        {icon}
-      </Text>
+      {hovered && hoveredIcon ? (
+        hoveredIcon
+      ) : typeof icon === 'string' ? (
+        <Text
+          style={[
+            styles.actionBtnIcon,
+            { color: active ? colors.text : colors.iconBtnText },
+          ]}
+        >
+          {icon}
+        </Text>
+      ) : (
+        icon
+      )}
     </Pressable>
   );
 }
@@ -72,10 +126,7 @@ export function SearchBar({
   onArrowDown,
   onArrowUp,
   onSubmit,
-  onClearHistory,
   onOpenSettings,
-  previewLines = 1,
-  onTogglePreviewLines,
 }: Props) {
   const { colors } = useTheme();
   const [value, setValue] = useState('');
@@ -127,16 +178,14 @@ export function SearchBar({
               ],
         ]}
       >
-        <Text style={[styles.searchGlyph, { color: colors.placeholderText }]}>
-          🔍
-        </Text>
+        <SearchIcon color={colors.placeholderText} />
         <TextInput
           ref={resolvedRef}
           testID="search-input"
           style={[styles.input, { color: colors.text }]}
           value={value}
           onChangeText={setValue}
-          placeholder="Type to search…"
+          placeholder="Search clipboard…"
           placeholderTextColor={colors.placeholderText}
           selectionColor={colors.accent}
           autoCorrect={false}
@@ -156,36 +205,24 @@ export function SearchBar({
             testID="clear-search-button"
             onPress={handleClearText}
             hitSlop={6}
-            style={styles.clearSearchBtn}
+            style={({ pressed }) => [
+              styles.clearSearchBtn,
+              pressed && { opacity: 0.6 },
+            ]}
           >
             <Text style={[styles.clearSearchGlyph, { color: colors.secondaryText }]}>
-              ✕
+              ×
             </Text>
           </Pressable>
         )}
       </View>
 
       <View style={styles.actionRow}>
-        {onTogglePreviewLines && (
-          <ActionIconButton
-            testID="quick-preview-lines-button"
-            icon="≡"
-            tooltip={`Preview lines: ${previewLines} (click to toggle)`}
-            onPress={onTogglePreviewLines}
-          />
-        )}
-        {onClearHistory && (
-          <ActionIconButton
-            testID="quick-clear-button"
-            icon="🗑"
-            tooltip="Clear clipboard history"
-            onPress={onClearHistory}
-          />
-        )}
         {onOpenSettings && (
           <ActionIconButton
             testID="quick-settings-button"
-            icon="⚙"
+            icon={<SettingsIcon color={colors.iconBtnText} />}
+            hoveredIcon={<SettingsIcon color={colors.text} />}
             tooltip="Preferences"
             onPress={onOpenSettings}
           />
@@ -223,9 +260,30 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
   },
-  searchGlyph: {
-    fontSize: 12,
+  searchIconWrap: {
+    width: 13,
+    height: 13,
     marginRight: 6,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  searchIconCircle: {
+    width: 8.5,
+    height: 8.5,
+    borderRadius: 4.25,
+    borderWidth: 1.3,
+    position: 'absolute',
+    top: 0.5,
+    left: 0.5,
+  },
+  searchIconHandle: {
+    width: 1.3,
+    height: 4,
+    borderRadius: 0.6,
+    position: 'absolute',
+    bottom: 0.5,
+    right: 0.5,
+    transform: [{ rotate: '-45deg' }],
   },
   input: {
     flex: 1,
@@ -235,18 +293,20 @@ const styles = StyleSheet.create({
     borderWidth: 0,
   },
   clearSearchBtn: {
-    paddingHorizontal: 4,
-    paddingVertical: 2,
+    width: 16,
+    height: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginLeft: 4,
   },
   clearSearchGlyph: {
-    fontSize: 11,
-    fontWeight: '600',
+    fontSize: 13,
+    lineHeight: 14,
+    fontWeight: '400',
   },
   actionRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 2,
   },
   actionBtn: {
     width: 26,
@@ -260,5 +320,17 @@ const styles = StyleSheet.create({
   },
   actionBtnIcon: {
     fontSize: 13,
+  },
+  settingsWrap: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  settingsTooth: {
+    position: 'absolute',
+    borderRadius: 0.6,
+  },
+  settingsRing: {
+    position: 'absolute',
+    borderWidth: 1.6,
   },
 });
