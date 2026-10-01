@@ -12,6 +12,7 @@ export interface ClipboardPayload {
 interface ClipboardMonitorNative {
   start(): void;
   stop(): void;
+  syncImages(keepPaths: string[]): Promise<number>;
   write(
     type: string,
     content: string,
@@ -36,6 +37,9 @@ export const ClipboardMonitor = {
   },
   subscribe(cb: (payload: ClipboardPayload) => void) {
     return emitter.addListener('onClipboardChange', cb);
+  },
+  syncImages(keepPaths: string[]): Promise<number> {
+    return native.syncImages(keepPaths);
   },
   write(payload: {
     type: 'text' | 'image';

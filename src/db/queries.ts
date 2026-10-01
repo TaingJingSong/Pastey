@@ -1,4 +1,24 @@
 import { sqlite } from '../native/PasteySQLite';
+import { ClipboardMonitor } from '../native/ClipboardMonitor';
+
+export const MAX_ITEMS = 500;
+export const MAX_AGE_DAYS = 30;
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+// Unpinned rows that are either past the age limit or outside the newest MAX_ITEMS.
+const EXPIRABLE = `
+  pinned = 0
+  AND (
+    created_at < ?
+    OR id NOT IN (
+      SELECT id FROM items
+      WHERE pinned = 0
+      ORDER BY created_at DESC
+      LIMIT ?
+    )
+  )
+`;
 
 export interface ClipItem {
   id: number;
@@ -104,4 +124,30 @@ export async function deleteClip(id: number) {
 
 export async function clearAll() {
   await sqlite.execute('DELETE FROM items');
+}
+
+export async function pruneOldItems(): Promise<number> {
+  const cutoff = Date.now() - MAX_AGE_DAYS * DAY_MS;
+
+  const doomed = await sqlite.execute<{ id: number }>(
+    `SELECT id FROM items WHERE ${EXPIRABLE}`,
+    [cutoff, MAX_ITEMS]
+  );
+  if (doomed.length === 0) {
+    return 0;
+  }
+
+  await sqlite.execute(`DELETE FROM items WHERE ${EXPIRABLE}`, [cutoff, MAX_ITEMS]);
+
+  // Rows first, then files: unlinking before the DELETE would risk leaving a
+  // live row pointing at a file that no longer exists. Anything the DELETE
+  // missed (a row inserted between the two statements) simply keeps its file.
+  const remaining = await sqlite.execute<{ filePath: string | null }>(
+    'SELECT file_path AS filePath FROM items WHERE file_path IS NOT NULL'
+  );
+  await ClipboardMonitor.syncImages(
+    remaining.map(row => row.filePath).filter((p): p is string => !!p)
+  );
+
+  return doomed.length;
 }

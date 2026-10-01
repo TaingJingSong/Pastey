@@ -17,6 +17,38 @@ class ClipboardMonitor: RCTEventEmitter {
     return false
   }
 
+  private var imageDirectory: String {
+    return NSTemporaryDirectory() + "pastey/"
+  }
+
+  /// Deletes every file in the image directory that is not in `keepPaths`.
+  @objc func syncImages(
+    _ keepPaths: [String],
+    resolver resolve: @escaping RCTPromiseResolveBlock,
+    rejecter reject: @escaping RCTPromiseRejectBlock
+  ) {
+    let dir = imageDirectory
+    let keep = Set(keepPaths)
+
+    guard let entries = try? FileManager.default.contentsOfDirectory(atPath: dir) else {
+      resolve(0)
+      return
+    }
+
+    var removed = 0
+    for entry in entries {
+      let path = dir + entry
+      if keep.contains(path) {
+        continue
+      }
+      if (try? FileManager.default.removeItem(atPath: path)) != nil {
+        removed += 1
+      }
+    }
+
+    resolve(removed)
+  }
+
   @objc func start() {
     DispatchQueue.main.async { [weak self] in
       guard let self = self else { return }
@@ -96,7 +128,7 @@ class ClipboardMonitor: RCTEventEmitter {
     }
 
     if let data = pb.data(forType: .png) {
-      let dir = NSTemporaryDirectory() + "pastey/"
+      let dir = imageDirectory
       try? FileManager.default.createDirectory(
         atPath: dir,
         withIntermediateDirectories: true

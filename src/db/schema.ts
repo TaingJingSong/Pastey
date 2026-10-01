@@ -1,4 +1,5 @@
 import { sqlite } from '../native/PasteySQLite';
+import { pruneOldItems } from './queries';
 
 export const db = sqlite;
 
@@ -43,6 +44,15 @@ export async function initSchema(): Promise<void> {
         full_text TEXT
       )
     `);
+
+    try {
+      const pruned = await pruneOldItems();
+      if (pruned > 0) {
+        console.log(`[db] pruned ${pruned} expired item(s)`);
+      }
+    } catch (error) {
+      console.log('[db] prune failed', error);
+    }
 
     initialized = true;
   })();

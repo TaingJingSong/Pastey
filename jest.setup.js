@@ -6,6 +6,7 @@ NativeModules.ClipboardMonitor = {
   start: jest.fn(),
   stop: jest.fn(),
   write: jest.fn().mockResolvedValue(true),
+  syncImages: jest.fn().mockResolvedValue(0),
   addListener: jest.fn(),
   removeListeners: jest.fn(),
 };
