@@ -71,6 +71,10 @@ class SettingsWindowModule: NSObject {
     }
   }
 
+  @objc var isWindowVisible: Bool {
+    return window?.isVisible ?? false
+  }
+
   private func makeWindow() -> SettingsWindow? {
     guard let appDelegate = NSApp.delegate as? AppDelegate else { return nil }
 
@@ -96,6 +100,7 @@ class SettingsWindowModule: NSObject {
     window.title = "Pastey Settings"
     window.contentView = content
     window.isReleasedWhenClosed = false
+    window.level = .floating
     window.center()
 
     // Accessory apps have no dock icon and no windows of their own; without
@@ -105,7 +110,9 @@ class SettingsWindowModule: NSObject {
       object: window,
       queue: .main
     ) { _ in
-      NSApp.hide(nil)
+      if PopoverModule.shared?.isPopoverShown != true {
+        NSApp.hide(nil)
+      }
     }
 
     return window

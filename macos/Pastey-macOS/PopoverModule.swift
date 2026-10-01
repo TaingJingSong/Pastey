@@ -60,6 +60,10 @@ class PopoverModule: RCTEventEmitter {
     }
   }
 
+  @objc var isPopoverShown: Bool {
+    return popover?.isShown ?? false
+  }
+
   @objc func toggleInternal() {
     guard let appDelegate = NSApp.delegate as? AppDelegate,
           let button = appDelegate.statusItemButton() else {
@@ -80,7 +84,9 @@ class PopoverModule: RCTEventEmitter {
 
     if popover.isShown {
       popover.performClose(nil)
-      NSApp.hide(nil)
+      if SettingsWindowModule.shared?.isWindowVisible != true {
+        NSApp.hide(nil)
+      }
       return
     }
 
@@ -118,7 +124,9 @@ class PopoverModule: RCTEventEmitter {
 
       if popover.isShown {
         popover.performClose(nil)
-        NSApp.hide(nil)
+        if SettingsWindowModule.shared?.isWindowVisible != true {
+          NSApp.hide(nil)
+        }
         resolve(true)
         return
       }
@@ -145,7 +153,9 @@ class PopoverModule: RCTEventEmitter {
   ) {
     DispatchQueue.main.async {
       self.popover?.performClose(nil)
-      NSApp.hide(nil)
+      if SettingsWindowModule.shared?.isWindowVisible != true {
+        NSApp.hide(nil)
+      }
       resolve(true)
     }
   }
@@ -200,7 +210,7 @@ class PopoverModule: RCTEventEmitter {
     }
 
     let pop = NSPopover()
-    pop.behavior = .transient        // dismisses on click-outside
+    pop.behavior = .semitransient    // dismisses on click-outside application
     pop.animates = true
     pop.contentSize = NSSize(width: 420, height: 520)
 
@@ -396,7 +406,9 @@ class PopoverDelegate: NSObject, NSPopoverDelegate {
 
   func popoverDidClose(_ notification: Notification) {
     PopoverModule.shared?.dismissPreview()
-    NSApp.hide(nil)
+    if SettingsWindowModule.shared?.isWindowVisible != true {
+      NSApp.hide(nil)
+    }
     onClose?()
   }
 }
