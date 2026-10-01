@@ -10,10 +10,12 @@ interface Props {
   selectedIndex?: number;
   compact?: boolean;
   previewLines?: number;
+  previewItemId?: number | null;
   onCopy: (id: number) => void;
   onDelete: (id: number) => void;
   onTogglePin: (id: number) => void;
-  onPreview?: (id: number) => void;
+  onPreview?: (item: ClipItem) => void;
+  onPreviewHover?: (item: ClipItem) => void;
 }
 
 function ItemSeparator() {
@@ -26,10 +28,12 @@ export function HistoryList({
   selectedIndex = 0,
   compact = false,
   previewLines = 1,
+  previewItemId,
   onCopy,
   onDelete,
   onTogglePin,
   onPreview,
+  onPreviewHover,
 }: Props) {
   const listRef = useRef<FlashList<ClipItem>>(null);
 
@@ -52,7 +56,7 @@ export function HistoryList({
       <FlashList
         ref={listRef}
         data={items}
-        extraData={{ selectedIndex, previewLines }}
+        extraData={{ selectedIndex, previewLines, previewItemId }}
         keyExtractor={item => String(item.id)}
         estimatedItemSize={previewLines === 1 ? 32 : 48}
         estimatedListSize={{ width: 420, height: 476 }}
@@ -63,10 +67,12 @@ export function HistoryList({
             selected={compact && index === selectedIndex}
             compact={compact}
             previewLines={previewLines}
+            isCurrentPreviewItem={previewItemId === item.id}
             onCopy={() => onCopy(item.id)}
             onDelete={() => onDelete(item.id)}
             onTogglePin={() => onTogglePin(item.id)}
-            onPreview={onPreview ? () => onPreview(item.id) : undefined}
+            onPreview={onPreview ? () => onPreview(item) : undefined}
+            onPreviewHover={onPreviewHover ? () => onPreviewHover(item) : undefined}
           />
         )}
       />

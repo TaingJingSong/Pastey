@@ -173,4 +173,66 @@ it('triggers onPreview callback when preview button is clicked', () => {
   });
 
   expect(onPreviewMock).toHaveBeenCalledTimes(1);
+
+  // Check glyph text is >
+  const glyph = previewBtn.findByType(Text);
+  expect(glyph.props.children).toBe('>');
+});
+
+it('triggers onPreviewHover when hovered for 2 seconds', () => {
+  jest.useFakeTimers();
+  const onPreviewHoverMock = jest.fn();
+
+  const tree = renderer.create(
+    <HistoryItem
+      item={mockItem}
+      onCopy={jest.fn()}
+      onDelete={jest.fn()}
+      onTogglePin={jest.fn()}
+      onPreviewHover={onPreviewHoverMock}
+    />
+  );
+
+  const row = tree.root.findByProps({ testID: 'history-item-1' });
+
+  // Hover in
+  act(() => {
+    row.props.onHoverIn();
+  });
+
+  // Not called immediately
+  expect(onPreviewHoverMock).not.toHaveBeenCalled();
+
+  // Advance by 1.5 seconds - still not called
+  act(() => {
+    jest.advanceTimersByTime(1500);
+  });
+  expect(onPreviewHoverMock).not.toHaveBeenCalled();
+
+  // Advance past 2 seconds - now called
+  act(() => {
+    jest.advanceTimersByTime(600);
+  });
+  expect(onPreviewHoverMock).toHaveBeenCalledTimes(1);
+
+  // Hover out and hover in again, but hover out before 2 seconds
+  act(() => {
+    row.props.onHoverOut();
+    row.props.onHoverIn();
+  });
+  act(() => {
+    jest.advanceTimersByTime(1000);
+    row.props.onHoverOut();
+  });
+  act(() => {
+    jest.advanceTimersByTime(2000);
+  });
+
+  // Still only 1 call
+  expect(onPreviewHoverMock).toHaveBeenCalledTimes(1);
+
+  act(() => {
+    tree.unmount();
+  });
+  jest.useRealTimers();
 });

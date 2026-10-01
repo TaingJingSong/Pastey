@@ -36,6 +36,18 @@ export const Popover = {
     }
     return native.setContentSize(width, height);
   },
+  showPreview(): Promise<boolean> {
+    if (!native?.showPreview) {
+      return Promise.resolve(false);
+    }
+    return native.showPreview();
+  },
+  hidePreview(): Promise<boolean> {
+    if (!native?.hidePreview) {
+      return Promise.resolve(false);
+    }
+    return native.hidePreview();
+  },
   onShow(callback: () => void) {
     if (!emitter) {
       return { remove: () => {} };

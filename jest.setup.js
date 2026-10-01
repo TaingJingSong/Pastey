@@ -32,6 +32,8 @@ NativeModules.PopoverModule = {
   hide: jest.fn().mockResolvedValue(true),
   toggle: jest.fn().mockResolvedValue(true),
   attachKeyMonitor: jest.fn(),
+  showPreview: jest.fn().mockResolvedValue(true),
+  hidePreview: jest.fn().mockResolvedValue(true),
   addListener: jest.fn(),
   removeListeners: jest.fn(),
 };

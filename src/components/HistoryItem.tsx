@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { ClipItem } from '../db/queries';
 import { useTheme } from '../theme';
@@ -8,10 +8,12 @@ interface Props {
   selected?: boolean;
   compact?: boolean;
   previewLines?: number;
+  isCurrentPreviewItem?: boolean;
   onCopy: () => void;
   onDelete: () => void;
   onTogglePin: () => void;
   onPreview?: () => void;
+  onPreviewHover?: () => void;
 }
 
 export function HistoryItem({
@@ -19,16 +21,45 @@ export function HistoryItem({
   selected = false,
   compact = false,
   previewLines = 1,
+  isCurrentPreviewItem = false,
   onCopy,
   onDelete,
   onTogglePin,
   onPreview,
+  onPreviewHover,
 }: Props) {
   const { colors } = useTheme();
   const [isHovered, setIsHovered] = useState(false);
+  const hoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isPinned = item.pinned === 1;
 
-  const showActions = isPinned || isHovered || selected;
+  useEffect(() => {
+    return () => {
+      if (hoverTimerRef.current) {
+        clearTimeout(hoverTimerRef.current);
+      }
+    };
+  }, []);
+
+  const handleHoverIn = () => {
+    setIsHovered(true);
+    if (hoverTimerRef.current) {
+      clearTimeout(hoverTimerRef.current);
+    }
+    hoverTimerRef.current = setTimeout(() => {
+      onPreviewHover?.();
+    }, 2000);
+  };
+
+  const handleHoverOut = () => {
+    setIsHovered(false);
+    if (hoverTimerRef.current) {
+      clearTimeout(hoverTimerRef.current);
+      hoverTimerRef.current = null;
+    }
+  };
+
+  const showActions = isPinned || isHovered || selected || isCurrentPreviewItem;
 
   return (
     <Pressable
@@ -43,11 +74,11 @@ export function HistoryItem({
       ]}
       onPress={onCopy}
       onLongPress={onDelete}
-      onHoverIn={() => setIsHovered(true)}
-      onHoverOut={() => setIsHovered(false)}
+      onHoverIn={handleHoverIn}
+      onHoverOut={handleHoverOut}
       {...({
-        onMouseEnter: () => setIsHovered(true),
-        onMouseLeave: () => setIsHovered(false),
+        onMouseEnter: handleHoverIn,
+        onMouseLeave: handleHoverOut,
       } as any)}
     >
       <View style={styles.body}>
@@ -72,21 +103,21 @@ export function HistoryItem({
             hitSlop={6}
             style={[
               styles.actionBtn,
-              isHovered || selected
+              isHovered || selected || isCurrentPreviewItem
                 ? styles.actionBtnVisible
                 : styles.actionBtnHidden,
             ]}
-            pointerEvents={isHovered || selected ? 'auto' : 'none'}
+            pointerEvents={isHovered || selected || isCurrentPreviewItem ? 'auto' : 'none'}
             accessibilityLabel="Preview full content"
           >
             <Text
               style={[
                 styles.actionGlyph,
-                { color: colors.secondaryText },
-                selected && { color: colors.selectedText },
+                { color: isCurrentPreviewItem ? colors.accent : colors.secondaryText },
+                selected && { color: isCurrentPreviewItem ? colors.accentText : colors.selectedText },
               ]}
             >
-              👁
+              &gt;
             </Text>
           </Pressable>
         )}
@@ -162,8 +193,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   actionGlyph: {
-    fontSize: 11,
-    lineHeight: 13,
+    fontSize: 13,
+    lineHeight: 15,
+    fontWeight: '700',
   },
   pinGlyph: {
     fontSize: 13,

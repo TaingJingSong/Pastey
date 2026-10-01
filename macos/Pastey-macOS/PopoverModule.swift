@@ -12,6 +12,7 @@ class PopoverModule: RCTEventEmitter {
   private var keyMonitor: Any?
   private var lastCloseTime: TimeInterval = 0
   private var hasListeners = false
+  private var previewPanel: NSPanel?
 
   override init() {
     super.init()
@@ -245,6 +246,112 @@ class PopoverModule: RCTEventEmitter {
     }
   }
 
+  @objc func showPreview(
+    _ resolve: @escaping RCTPromiseResolveBlock,
+    rejecter reject: @escaping RCTPromiseRejectBlock
+  ) {
+    DispatchQueue.main.async {
+      guard let popover = self.popover, popover.isShown,
+            let window = popover.contentViewController?.view.window else {
+        resolve(false)
+        return
+      }
+
+      let panel = self.previewPanel ?? self.makePreviewPanel()
+      guard let panel = panel else {
+        resolve(false)
+        return
+      }
+      self.previewPanel = panel
+
+      let theme = UserDefaults.standard.string(forKey: "theme")
+      panel.appearance = SettingsModule.resolveAppearance(for: theme)
+
+      let popFrame = window.frame
+      let screen = window.screen ?? NSScreen.main ?? NSScreen.screens[0]
+      let visibleFrame = screen.visibleFrame
+      let previewWidth: CGFloat = 380
+      let previewHeight: CGFloat = min(520, popFrame.height)
+      let spacing: CGFloat = 8
+
+      // Default to right side of the popover
+      var targetX = popFrame.maxX + spacing
+      var targetY = popFrame.maxY - previewHeight
+
+      // If overflowing right side, flip to left side
+      if targetX + previewWidth > visibleFrame.maxX {
+        targetX = popFrame.minX - previewWidth - spacing
+      }
+      if targetX < visibleFrame.minX {
+        targetX = visibleFrame.minX
+      }
+      if targetY < visibleFrame.minY {
+        targetY = visibleFrame.minY
+      }
+      if targetY + previewHeight > visibleFrame.maxY {
+        targetY = visibleFrame.maxY - previewHeight
+      }
+
+      panel.setFrame(NSRect(x: targetX, y: targetY, width: previewWidth, height: previewHeight), display: true)
+
+      if panel.parent == nil {
+        window.addChildWindow(panel, ordered: .above)
+      }
+      panel.orderFront(nil)
+      resolve(true)
+    }
+  }
+
+  @objc func hidePreview(
+    _ resolve: @escaping RCTPromiseResolveBlock,
+    rejecter reject: @escaping RCTPromiseRejectBlock
+  ) {
+    DispatchQueue.main.async {
+      self.dismissPreview()
+      resolve(true)
+    }
+  }
+
+  func dismissPreview() {
+    guard let panel = self.previewPanel else { return }
+    if let parent = panel.parent {
+      parent.removeChildWindow(panel)
+    }
+    panel.orderOut(self)
+  }
+
+  private func makePreviewPanel() -> NSPanel? {
+    guard let appDelegate = NSApp.delegate as? AppDelegate else { return nil }
+
+    let content = appDelegate.rootView(
+      forModuleName: "PasteyPreview",
+      initialProps: [:]
+    )
+    guard let content = content else { return nil }
+
+    let size = NSSize(width: 380, height: 520)
+    content.frame = NSRect(origin: .zero, size: size)
+    content.autoresizingMask = [.width, .height]
+
+    let panel = NSPanel(
+      contentRect: NSRect(origin: .zero, size: size),
+      styleMask: [.titled, .closable, .utilityWindow, .nonactivatingPanel, .fullSizeContentView],
+      backing: .buffered,
+      defer: false
+    )
+    panel.title = "Preview"
+    panel.titleVisibility = .hidden
+    panel.titlebarAppearsTransparent = true
+    panel.isFloatingPanel = true
+    panel.becomesKeyOnlyIfNeeded = true
+    panel.level = .floating
+    panel.contentView = content
+    panel.isReleasedWhenClosed = false
+    panel.hasShadow = true
+
+    return panel
+  }
+
   @objc func updateAppearance(_ appearance: NSAppearance? = nil) {
     DispatchQueue.main.async {
       let resolvedAppearance: NSAppearance
@@ -255,6 +362,7 @@ class PopoverModule: RCTEventEmitter {
         resolvedAppearance = SettingsModule.resolveAppearance(for: theme)
       }
       self.popover?.appearance = resolvedAppearance
+      self.previewPanel?.appearance = resolvedAppearance
       if let window = self.popover?.contentViewController?.view.window {
         window.appearance = resolvedAppearance
       }
@@ -287,6 +395,7 @@ class PopoverDelegate: NSObject, NSPopoverDelegate {
   var onClose: (() -> Void)?
 
   func popoverDidClose(_ notification: Notification) {
+    PopoverModule.shared?.dismissPreview()
     NSApp.hide(nil)
     onClose?()
   }

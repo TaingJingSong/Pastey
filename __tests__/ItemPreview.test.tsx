@@ -130,3 +130,20 @@ it('shows close button in popup mode and calls onClose', () => {
 
   expect(closeMock).toHaveBeenCalledTimes(1);
 });
+
+it('renders PreviewApp root with item from previewStore', () => {
+  const { PreviewApp } = require('../src/PreviewApp');
+  const { usePreviewStore } = require('../src/store/previewStore');
+
+  act(() => {
+    usePreviewStore.setState({
+      item: mockTextItem,
+      fullContent: 'PreviewApp content',
+      isOpen: true,
+    });
+  });
+
+  const tree = renderer.create(<PreviewApp />);
+  const fullText = tree.root.findByProps({ testID: 'preview-full-text' });
+  expect(fullText.props.children).toBe('PreviewApp content');
+});

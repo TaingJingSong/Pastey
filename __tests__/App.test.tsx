@@ -6,6 +6,7 @@ import renderer, { act } from 'react-test-renderer';
 import App from '../src/App';
 import { useHistoryStore } from '../src/store/historyStore';
 import { useSettingsStore } from '../src/store/settingsStore';
+import { usePreviewStore } from '../src/store/previewStore';
 
 const sql = NativeModules.PasteySQLite as unknown as {
   execute: jest.Mock<(statement: string, params?: unknown[]) => Promise<any>>;
@@ -169,42 +170,16 @@ it('arrow keys navigate item selection in store and list', async () => {
   expect(useHistoryStore.getState().selectedIndex).toBe(1);
 });
 
-it('clicking preview toggle button toggles side preview', async () => {
-  let tree: any;
-  await act(async () => {
-    tree = renderer.create(<App />);
-    await new Promise(resolve => setTimeout(resolve, 50));
-  });
-  currentTree = tree;
+it('clicking item preview button (>) opens auxiliary preview popup window', async () => {
+  const popoverModule = NativeModules.PopoverModule as unknown as {
+    showPreview: jest.Mock<() => Promise<boolean>>;
+    hidePreview: jest.Mock<() => Promise<boolean>>;
+  };
 
-  expect(useSettingsStore.getState().values.previewLayout).toBe('popup');
-
-  const toggleBtn = tree.root.findByProps({ testID: 'quick-preview-toggle-button' });
-  await act(async () => {
-    toggleBtn.props.onPress();
-    await new Promise(resolve => setTimeout(resolve, 30));
-  });
-
-  expect(useSettingsStore.getState().values.previewLayout).toBe('side');
-
-  // Verify side preview container is mounted
-  const preview = tree.root.findByProps({ testID: 'item-preview-container' });
-  expect(preview).toBeDefined();
-
-  // Toggle back
-  await act(async () => {
-    toggleBtn.props.onPress();
-    await new Promise(resolve => setTimeout(resolve, 30));
-  });
-
-  expect(useSettingsStore.getState().values.previewLayout).toBe('popup');
-});
-
-it('clicking item preview button opens Quick Look popup modal', async () => {
   act(() => {
     useHistoryStore.setState({
       items: [
-        { id: 201, hash: 'h201', type: 'text', preview: 'full preview test item', filePath: null, createdAt: 1, pinned: 0 },
+        { id: 201, hash: 'h201', type: 'text', preview: 'preview test item', filePath: null, createdAt: 1, pinned: 0 },
       ],
       selectedIndex: 0,
     });
@@ -217,24 +192,23 @@ it('clicking item preview button opens Quick Look popup modal', async () => {
   });
   currentTree = tree;
 
-  // Initially modal is not open
-  expect(tree.root.findAllByProps({ testID: 'preview-popup-modal' }).length).toBe(0);
-
-  // Click item preview button
+  // Click item preview button (>)
   const itemPreviewBtn = tree.root.findByProps({ testID: 'preview-button-201' });
   await act(async () => {
     itemPreviewBtn.props.onPress();
+    await new Promise(resolve => setTimeout(resolve, 30));
   });
 
-  // Modal is now open
-  const modal = tree.root.findByProps({ testID: 'preview-popup-modal' });
-  expect(modal).toBeDefined();
+  expect(popoverModule.showPreview).toHaveBeenCalledTimes(1);
+  expect(usePreviewStore.getState().isOpen).toBe(true);
+  expect(usePreviewStore.getState().item?.id).toBe(201);
 
-  // Click backdrop to close
-  const backdrop = tree.root.findByProps({ testID: 'preview-popup-backdrop' });
+  // Closing preview calls hidePreview
   await act(async () => {
-    backdrop.props.onPress();
+    await usePreviewStore.getState().closePreview();
+    await new Promise(resolve => setTimeout(resolve, 30));
   });
 
-  expect(tree.root.findAllByProps({ testID: 'preview-popup-modal' }).length).toBe(0);
+  expect(popoverModule.hidePreview).toHaveBeenCalled();
+  expect(usePreviewStore.getState().isOpen).toBe(false);
 });

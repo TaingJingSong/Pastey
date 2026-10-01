@@ -166,60 +166,6 @@ function SettingsApp(): React.JSX.Element {
       </Text>
 
       <View style={[styles.row, styles.marginTopRow]}>
-        <Text style={[styles.label, { color: colors.text }]}>Preview layout</Text>
-        <View
-          testID="preview-layout-selector"
-          style={[
-            styles.themeSelector,
-            {
-              backgroundColor: colors.segmentBg,
-              borderColor: colors.segmentBorder,
-            },
-          ]}
-        >
-          {([
-            { id: 'popup', label: 'Popup' },
-            { id: 'side', label: 'Right Side' },
-          ] as const).map(option => {
-            const isSelected = (values.previewLayout ?? 'popup') === option.id;
-            return (
-              <Pressable
-                key={option.id}
-                testID={`preview-layout-option-${option.id}`}
-                style={({ pressed }) => [
-                  styles.themeOption,
-                  isSelected && [
-                    styles.themeOptionSelected,
-                    { backgroundColor: colors.segmentSelectedBg },
-                  ],
-                  pressed && !isSelected && styles.themeOptionPressed,
-                ]}
-                onPress={() => update('previewLayout', option.id)}
-                disabled={!ready}
-              >
-                <Text
-                  style={[
-                    styles.themeOptionText,
-                    {
-                      color: isSelected
-                        ? colors.segmentSelectedText
-                        : colors.secondaryText,
-                    },
-                    isSelected && styles.themeOptionTextSelected,
-                  ]}
-                >
-                  {option.label}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-      </View>
-      <Text style={[styles.hint, { color: colors.secondaryText }]}>
-        Preview full content in a popup window or a side-by-side pane.
-      </Text>
-
-      <View style={[styles.row, styles.marginTopRow]}>
         <Text style={[styles.label, { color: colors.text }]}>Items kept</Text>
         <TextInput
           testID="max-items-input"
