@@ -13,6 +13,7 @@
     "lint": "eslint .",
     "start": "react-native start",
     "start:reset": "react-native start --reset-cache",
+    "postinstall": "patch-package",
     "test": "jest"
   },
   "dependencies": {

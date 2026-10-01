@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import {
+  Pressable,
   ScrollView,
   StyleSheet,
   Switch,
   Text,
   TextInput,
-  TouchableOpacity,
   View,
 } from 'react-native';
 import { useSettingsStore } from './store/settingsStore';
@@ -105,16 +105,20 @@ function SettingsApp(): React.JSX.Element {
           autoCapitalize="none"
           autoCorrect={false}
         />
-        <TouchableOpacity
+        <Pressable
           testID="add-excluded-app-button"
-          style={styles.addButton}
+          style={({ pressed }) => [
+            styles.addButton,
+            (!ready || !newBundleId.trim()) && styles.disabledButton,
+            pressed && ready && !!newBundleId.trim() && styles.pressedButton,
+          ]}
           onPress={addExcludedApp}
           disabled={!ready || !newBundleId.trim()}
         >
           <Text style={[styles.addButtonText, (!ready || !newBundleId.trim()) && styles.disabledText]}>
             Add
           </Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
 
       <View style={styles.appList}>
@@ -126,14 +130,17 @@ function SettingsApp(): React.JSX.Element {
               <Text style={styles.appText} numberOfLines={1} ellipsizeMode="middle">
                 {app}
               </Text>
-              <TouchableOpacity
+              <Pressable
                 testID={`remove-app-${app}`}
-                style={styles.removeButton}
+                style={({ pressed }) => [
+                  styles.removeButton,
+                  pressed && ready && styles.pressedRemoveButton,
+                ]}
                 onPress={() => removeExcludedApp(app)}
                 disabled={!ready}
               >
                 <Text style={styles.removeButtonText}>Remove</Text>
-              </TouchableOpacity>
+              </Pressable>
             </View>
           ))
         )}
@@ -208,6 +215,15 @@ const styles = StyleSheet.create({
   },
   disabledText: {
     opacity: 0.5,
+  },
+  disabledButton: {
+    opacity: 0.5,
+  },
+  pressedButton: {
+    opacity: 0.75,
+  },
+  pressedRemoveButton: {
+    opacity: 0.6,
   },
   appList: {
     marginTop: 12,
