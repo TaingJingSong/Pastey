@@ -19,6 +19,7 @@ xcodebuild -workspace Pastey.xcworkspace \
   -scheme Pastey-macOS \
   -configuration Release \
   -derivedDataPath build \
+  SKIP_BUNDLING=1 \
   build
 
 echo "==> 3. Installing Pastey.app to /Applications..."

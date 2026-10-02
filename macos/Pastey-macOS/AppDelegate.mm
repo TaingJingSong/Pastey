@@ -138,14 +138,19 @@
   NSStatusBarButton *button = self.pasteyStatusItem.button;
   button.toolTip = @"Pastey";
 
-  NSImage *icon = nil;
-
-  if (@available(macOS 11.0, *)) {
-    icon = [NSImage imageWithSystemSymbolName:@"doc.on.clipboard"
-                    accessibilityDescription:@"Pastey"];
+  NSImage *icon = [NSImage imageNamed:NSImageNameApplicationIcon];
+  if (icon == nil) {
+    icon = [NSImage imageNamed:@"AppIcon"];
   }
 
   if (icon != nil) {
+    NSImage *statusBarIcon = [icon copy];
+    statusBarIcon.size = NSMakeSize(18, 18);
+    [statusBarIcon setTemplate:YES];
+    button.image = statusBarIcon;
+  } else if (@available(macOS 11.0, *)) {
+    icon = [NSImage imageWithSystemSymbolName:@"doc.on.clipboard"
+                    accessibilityDescription:@"Pastey"];
     [icon setTemplate:YES];
     button.image = icon;
   } else {

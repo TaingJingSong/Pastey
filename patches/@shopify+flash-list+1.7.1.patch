@@ -1,0 +1,68 @@
+diff --git a/node_modules/@shopify/flash-list/android/.gradle/9.2.0/checksums/checksums.lock b/node_modules/@shopify/flash-list/android/.gradle/9.2.0/checksums/checksums.lock
+new file mode 100644
+index 0000000..7cf3c11
+Binary files /dev/null and b/node_modules/@shopify/flash-list/android/.gradle/9.2.0/checksums/checksums.lock differ
+diff --git a/node_modules/@shopify/flash-list/android/.gradle/9.2.0/checksums/md5-checksums.bin b/node_modules/@shopify/flash-list/android/.gradle/9.2.0/checksums/md5-checksums.bin
+new file mode 100644
+index 0000000..00f9a88
+Binary files /dev/null and b/node_modules/@shopify/flash-list/android/.gradle/9.2.0/checksums/md5-checksums.bin differ
+diff --git a/node_modules/@shopify/flash-list/android/.gradle/9.2.0/checksums/sha1-checksums.bin b/node_modules/@shopify/flash-list/android/.gradle/9.2.0/checksums/sha1-checksums.bin
+new file mode 100644
+index 0000000..06ed5c4
+Binary files /dev/null and b/node_modules/@shopify/flash-list/android/.gradle/9.2.0/checksums/sha1-checksums.bin differ
+diff --git a/node_modules/@shopify/flash-list/android/.gradle/9.2.0/fileChanges/last-build.bin b/node_modules/@shopify/flash-list/android/.gradle/9.2.0/fileChanges/last-build.bin
+new file mode 100644
+index 0000000..f76dd23
+Binary files /dev/null and b/node_modules/@shopify/flash-list/android/.gradle/9.2.0/fileChanges/last-build.bin differ
+diff --git a/node_modules/@shopify/flash-list/android/.gradle/9.2.0/fileHashes/fileHashes.bin b/node_modules/@shopify/flash-list/android/.gradle/9.2.0/fileHashes/fileHashes.bin
+new file mode 100644
+index 0000000..b5c7681
+Binary files /dev/null and b/node_modules/@shopify/flash-list/android/.gradle/9.2.0/fileHashes/fileHashes.bin differ
+diff --git a/node_modules/@shopify/flash-list/android/.gradle/9.2.0/fileHashes/fileHashes.lock b/node_modules/@shopify/flash-list/android/.gradle/9.2.0/fileHashes/fileHashes.lock
+new file mode 100644
+index 0000000..acc589f
+Binary files /dev/null and b/node_modules/@shopify/flash-list/android/.gradle/9.2.0/fileHashes/fileHashes.lock differ
+diff --git a/node_modules/@shopify/flash-list/android/.gradle/9.2.0/gc.properties b/node_modules/@shopify/flash-list/android/.gradle/9.2.0/gc.properties
+new file mode 100644
+index 0000000..e69de29
+diff --git a/node_modules/@shopify/flash-list/android/.gradle/buildOutputCleanup/buildOutputCleanup.lock b/node_modules/@shopify/flash-list/android/.gradle/buildOutputCleanup/buildOutputCleanup.lock
+new file mode 100644
+index 0000000..dc4e780
+Binary files /dev/null and b/node_modules/@shopify/flash-list/android/.gradle/buildOutputCleanup/buildOutputCleanup.lock differ
+diff --git a/node_modules/@shopify/flash-list/android/.gradle/buildOutputCleanup/cache.properties b/node_modules/@shopify/flash-list/android/.gradle/buildOutputCleanup/cache.properties
+new file mode 100644
+index 0000000..d697d29
+--- /dev/null
++++ b/node_modules/@shopify/flash-list/android/.gradle/buildOutputCleanup/cache.properties
+@@ -0,0 +1,2 @@
++#Thu Oct 01 10:11:36 ICT 2026
++gradle.version=9.2.0
+diff --git a/node_modules/@shopify/flash-list/android/.gradle/vcs-1/gc.properties b/node_modules/@shopify/flash-list/android/.gradle/vcs-1/gc.properties
+new file mode 100644
+index 0000000..e69de29
+diff --git a/node_modules/@shopify/flash-list/dist/native/config/PlatformHelper.js b/node_modules/@shopify/flash-list/dist/native/config/PlatformHelper.js
+index b293d52..86041a2 100644
+--- a/node_modules/@shopify/flash-list/dist/native/config/PlatformHelper.js
++++ b/node_modules/@shopify/flash-list/dist/native/config/PlatformHelper.js
+@@ -13,7 +13,7 @@ var getCellContainerPlatformStyles = function (inverted, parentProps) {
+ };
+ exports.getCellContainerPlatformStyles = getCellContainerPlatformStyles;
+ var getItemAnimator = function () {
+-    return new DefaultJSItemAnimator_1.DefaultJSItemAnimator();
++    return undefined;
+ };
+ exports.getItemAnimator = getItemAnimator;
+ var getFooterContainer = function () {
+diff --git a/node_modules/@shopify/flash-list/src/native/config/PlatformHelper.ts b/node_modules/@shopify/flash-list/src/native/config/PlatformHelper.ts
+index b5a46b8..d5bd2fc 100644
+--- a/node_modules/@shopify/flash-list/src/native/config/PlatformHelper.ts
++++ b/node_modules/@shopify/flash-list/src/native/config/PlatformHelper.ts
+@@ -14,7 +14,7 @@ const getCellContainerPlatformStyles = (
+ };
+ 
+ const getItemAnimator = (): BaseItemAnimator | undefined => {
+-  return new DefaultJSItemAnimator();
++  return undefined;
+ };
+ 
+ const getFooterContainer = (): React.ComponentClass | undefined => {

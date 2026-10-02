@@ -5,6 +5,17 @@ import { HistoryItem } from './HistoryItem';
 import { StyleSheet, View } from 'react-native';
 import { useTheme } from '../theme';
 
+try {
+  // Disable DefaultJSItemAnimator on macOS to eliminate lagging 200ms animation when resizing
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const PlatformHelper = require('@shopify/flash-list/dist/native/config/PlatformHelper');
+  if (PlatformHelper) {
+    PlatformHelper.getItemAnimator = () => undefined;
+  }
+} catch {
+  // Ignore
+}
+
 interface Props {
   items: ClipItem[];
   selectedIndex?: number;

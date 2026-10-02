@@ -5,6 +5,11 @@ import React
 class HistoryPanel: NSPanel {
   override var canBecomeKey: Bool { return true }
   override var canBecomeMain: Bool { return true }
+
+  var customInLiveResize: Bool = false
+  override var inLiveResize: Bool {
+    return customInLiveResize || super.inLiveResize
+  }
 }
 
 @objc(PopoverModule)
@@ -395,6 +400,11 @@ class PopoverModule: RCTEventEmitter {
       let topY = panel.frame.maxY
       let newOriginY = topY - clampedHeight
       let newFrame = NSRect(x: panel.frame.origin.x, y: newOriginY, width: clampedWidth, height: clampedHeight)
+
+      CATransaction.begin()
+      CATransaction.setDisableActions(true)
+      panel.customInLiveResize = true
+
       panel.setFrame(newFrame, display: true, animate: false)
       if let effect = self.mouseVisualEffect {
         effect.frame = NSRect(origin: .zero, size: size)
@@ -405,6 +415,9 @@ class PopoverModule: RCTEventEmitter {
         rootView.needsLayout = true
         rootView.layoutSubtreeIfNeeded()
       }
+
+      panel.customInLiveResize = false
+      CATransaction.commit()
 
       resolve(true)
     }

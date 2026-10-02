@@ -169,6 +169,7 @@ function App(props: AppProps): React.JSX.Element {
   const currentSizeRef = useRef({ width: 420, height: 520 });
   const startDragRef = useRef({ width: 420, height: 520 });
   const [isResizing, setIsResizing] = useState(false);
+  const isResizingRef = useRef(false);
   const rafId = useRef<number | null>(null);
 
   const applySize = (width: number, height: number) => {
@@ -182,6 +183,9 @@ function App(props: AppProps): React.JSX.Element {
   };
 
   const handleContainerLayout = (e: LayoutChangeEvent) => {
+    if (isResizingRef.current) {
+      return;
+    }
     const { width, height } = e.nativeEvent.layout;
     if (width >= 320 && height >= 360) {
       currentSizeRef.current = { width: Math.round(width), height: Math.round(height) };
@@ -193,6 +197,7 @@ function App(props: AppProps): React.JSX.Element {
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: () => true,
       onPanResponderGrant: () => {
+        isResizingRef.current = true;
         setIsResizing(true);
         startDragRef.current = { ...currentSizeRef.current };
       },
@@ -202,6 +207,7 @@ function App(props: AppProps): React.JSX.Element {
         applySize(newWidth, newHeight);
       },
       onPanResponderRelease: () => {
+        isResizingRef.current = false;
         setIsResizing(false);
         if (rafId.current !== null) {
           cancelAnimationFrame(rafId.current);
@@ -210,6 +216,7 @@ function App(props: AppProps): React.JSX.Element {
         Popover.setContentSize(currentSizeRef.current.width, currentSizeRef.current.height);
       },
       onPanResponderTerminate: () => {
+        isResizingRef.current = false;
         setIsResizing(false);
       },
     })
@@ -220,6 +227,7 @@ function App(props: AppProps): React.JSX.Element {
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: () => true,
       onPanResponderGrant: () => {
+        isResizingRef.current = true;
         setIsResizing(true);
         startDragRef.current = { ...currentSizeRef.current };
       },
@@ -228,6 +236,7 @@ function App(props: AppProps): React.JSX.Element {
         applySize(newWidth, currentSizeRef.current.height);
       },
       onPanResponderRelease: () => {
+        isResizingRef.current = false;
         setIsResizing(false);
         if (rafId.current !== null) {
           cancelAnimationFrame(rafId.current);
@@ -236,6 +245,7 @@ function App(props: AppProps): React.JSX.Element {
         Popover.setContentSize(currentSizeRef.current.width, currentSizeRef.current.height);
       },
       onPanResponderTerminate: () => {
+        isResizingRef.current = false;
         setIsResizing(false);
       },
     })
@@ -246,6 +256,7 @@ function App(props: AppProps): React.JSX.Element {
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: () => true,
       onPanResponderGrant: () => {
+        isResizingRef.current = true;
         setIsResizing(true);
         startDragRef.current = { ...currentSizeRef.current };
       },
@@ -254,6 +265,7 @@ function App(props: AppProps): React.JSX.Element {
         applySize(currentSizeRef.current.width, newHeight);
       },
       onPanResponderRelease: () => {
+        isResizingRef.current = false;
         setIsResizing(false);
         if (rafId.current !== null) {
           cancelAnimationFrame(rafId.current);
@@ -262,6 +274,7 @@ function App(props: AppProps): React.JSX.Element {
         Popover.setContentSize(currentSizeRef.current.width, currentSizeRef.current.height);
       },
       onPanResponderTerminate: () => {
+        isResizingRef.current = false;
         setIsResizing(false);
       },
     })
