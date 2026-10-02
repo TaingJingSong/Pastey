@@ -19,6 +19,7 @@ import { SettingsWindow } from './native/SettingsWindowModule';
 
 interface AppProps {
   mode?: string;
+  position?: 'menubar' | 'mouse';
 }
 
 function App(props: AppProps): React.JSX.Element {
@@ -41,6 +42,11 @@ function App(props: AppProps): React.JSX.Element {
   const { item: previewItem, isOpen: isPreviewOpen, openPreview, togglePreview } =
     usePreviewStore();
   const { colors } = useTheme();
+
+  const [displayPosition, setDisplayPosition] = useState<'menubar' | 'mouse'>(
+    props.position ?? 'menubar'
+  );
+  const isResizable = displayPosition === 'mouse';
 
   const searchInputRef = useRef<TextInput>(null);
   const isPopover = props.mode === 'popover' || true;
@@ -93,7 +99,11 @@ function App(props: AppProps): React.JSX.Element {
       }
     });
 
-    const showSub = Popover.onShow(() => {
+    const showSub = Popover.onShow(payload => {
+      if (payload?.position === 'mouse' || payload?.position === 'menubar') {
+        setDisplayPosition(payload.position);
+      }
+      useHistoryStore.getState().refresh();
       setTimeout(() => {
         searchInputRef.current?.focus();
       }, 50);
@@ -101,6 +111,7 @@ function App(props: AppProps): React.JSX.Element {
 
     const hideSub = Popover.onHide(() => {
       usePreviewStore.getState().closePreview();
+      setDisplayPosition('menubar');
     });
 
     const themeSub = Popover.onSystemThemeChanged(({ systemTheme }) => {
@@ -303,7 +314,7 @@ function App(props: AppProps): React.JSX.Element {
           onPreviewHoverStart={item => usePreviewStore.getState().cancelCloseHoverTimer(item.id)}
         />
       )}
-      {isPopover && (
+      {isPopover && isResizable && (
         <>
           <View
             testID="resize-handle-right"

@@ -2,18 +2,25 @@ import AppKit
 import Foundation
 import React
 
+class HistoryPanel: NSPanel {
+  override var canBecomeKey: Bool { return true }
+  override var canBecomeMain: Bool { return true }
+}
+
 @objc(PopoverModule)
 class PopoverModule: RCTEventEmitter {
 
   @objc static var shared: PopoverModule?
   private var popover: NSPopover?
+  private var popoverContainer: NSView?
   private var hostingController: NSViewController?
   private var popoverDelegate: PopoverDelegate?
   private var keyMonitor: Any?
   private var lastCloseTime: TimeInterval = 0
   private var hasListeners = false
   private var previewPanel: NSPanel?
-  private var mousePositioningWindow: NSWindow?
+  private var mousePanel: HistoryPanel?
+  private var mouseVisualEffect: NSVisualEffectView?
   private var windowResizeObserver: NSObjectProtocol?
   private var outsideClickGlobalMonitor: Any?
   private var outsideClickLocalMonitor: Any?
@@ -65,18 +72,73 @@ class PopoverModule: RCTEventEmitter {
   }
 
   @objc var isPopoverShown: Bool {
-    return popover?.isShown ?? false
+    return (popover?.isShown ?? false) || (mousePanel?.isVisible ?? false)
+  }
+
+  func closeMousePanel() {
+    if let panel = self.mousePanel, panel.isVisible {
+      panel.orderOut(nil)
+      self.dismissPreview()
+      self.stopOutsideClickMonitoring()
+      self.lastCloseTime = ProcessInfo.processInfo.systemUptime
+      self.emitEvent(name: "onPopoverHide", body: nil)
+    }
+  }
+
+  private func ensureMousePanel() {
+    if mousePanel != nil { return }
+
+    let savedWidth = UserDefaults.standard.double(forKey: "historyWidth")
+    let savedHeight = UserDefaults.standard.double(forKey: "historyHeight")
+    let initialWidth: CGFloat = savedWidth >= 320 ? CGFloat(savedWidth) : 420
+    let initialHeight: CGFloat = savedHeight >= 360 ? CGFloat(savedHeight) : 520
+    let initialSize = NSSize(width: initialWidth, height: initialHeight)
+
+    let panel = HistoryPanel(
+      contentRect: NSRect(origin: .zero, size: initialSize),
+      styleMask: [.borderless, .resizable],
+      backing: .buffered,
+      defer: false
+    )
+    panel.isFloatingPanel = true
+    panel.level = .floating
+    panel.isOpaque = false
+    panel.backgroundColor = .clear
+    panel.hasShadow = true
+    panel.minSize = NSSize(width: 320, height: 360)
+    panel.maxSize = NSSize(width: 900, height: 1200)
+
+    let effect = NSVisualEffectView(frame: NSRect(origin: .zero, size: initialSize))
+    effect.material = .popover
+    effect.blendingMode = .behindWindow
+    effect.state = .active
+    effect.autoresizingMask = [.width, .height]
+    effect.wantsLayer = true
+    effect.layer?.cornerRadius = 10
+    effect.layer?.masksToBounds = true
+
+    panel.contentView = effect
+    self.mouseVisualEffect = effect
+    self.mousePanel = panel
+
+    NotificationCenter.default.addObserver(
+      forName: NSWindow.didResizeNotification,
+      object: panel,
+      queue: .main
+    ) { notification in
+      guard let win = notification.object as? NSWindow else { return }
+      let contentSize = win.frame.size
+      let clampedW = max(320, min(900, contentSize.width))
+      let clampedH = max(360, min(1200, contentSize.height))
+      UserDefaults.standard.set(Double(clampedW), forKey: "historyWidth")
+      UserDefaults.standard.set(Double(clampedH), forKey: "historyHeight")
+    }
   }
 
   @objc func toggleInternal(position: String = "menubar") {
-    guard let appDelegate = NSApp.delegate as? AppDelegate else {
-      NSLog("[Pastey] PopoverModule.toggleInternal: appDelegate unavailable")
-      return
-    }
-
-    self.ensurePopover()
-    guard let popover = self.popover else {
-      NSLog("[Pastey] PopoverModule.toggleInternal: popover could not be created")
+    guard let appDelegate = NSApp.delegate as? AppDelegate,
+          let rootView = appDelegate.pasteyRootView() else {
+      NSLog("[Pastey] PopoverModule.toggleInternal: appDelegate or rootView unavailable")
       return
     }
 
@@ -85,64 +147,123 @@ class PopoverModule: RCTEventEmitter {
       return
     }
 
+    if position == "mouse" {
+      if self.popover?.isShown == true {
+        self.stopOutsideClickMonitoring()
+        self.popover?.performClose(nil)
+      }
+
+      self.ensureMousePanel()
+      guard let panel = self.mousePanel,
+            let effect = self.mouseVisualEffect else { return }
+
+      if panel.isVisible {
+        self.closeMousePanel()
+        if SettingsWindowModule.shared?.isWindowVisible != true {
+          NSApp.hide(nil)
+        }
+        return
+      }
+
+      let savedWidth = UserDefaults.standard.double(forKey: "historyWidth")
+      let savedHeight = UserDefaults.standard.double(forKey: "historyHeight")
+      let initialWidth: CGFloat = savedWidth >= 320 ? CGFloat(savedWidth) : 420
+      let initialHeight: CGFloat = savedHeight >= 360 ? CGFloat(savedHeight) : 520
+      let currentSize = NSSize(width: initialWidth, height: initialHeight)
+
+      rootView.removeFromSuperview()
+      rootView.wantsLayer = true
+      rootView.layer?.backgroundColor = NSColor.clear.cgColor
+      rootView.frame = NSRect(origin: .zero, size: currentSize)
+      rootView.autoresizingMask = [.width, .height]
+      if !effect.subviews.contains(rootView) {
+        effect.addSubview(rootView)
+      }
+      rootView.needsLayout = true
+      rootView.layoutSubtreeIfNeeded()
+
+      let mouseLoc = NSEvent.mouseLocation
+      let screen = NSScreen.screens.first(where: { NSPointInRect(mouseLoc, $0.frame) }) ?? NSScreen.main ?? NSScreen.screens[0]
+      let visFrame = screen.visibleFrame
+
+      var x = mouseLoc.x - (currentSize.width / 2)
+      var y = mouseLoc.y - currentSize.height + 20
+
+      x = max(visFrame.minX + 8, min(x, visFrame.maxX - currentSize.width - 8))
+      y = max(visFrame.minY + 8, min(y, visFrame.maxY - currentSize.height - 8))
+
+      panel.setFrame(NSRect(origin: NSPoint(x: x, y: y), size: currentSize), display: true)
+
+      let theme = UserDefaults.standard.string(forKey: "theme")
+      let appearance = SettingsModule.resolveAppearance(for: theme)
+      panel.appearance = appearance
+      effect.appearance = appearance
+
+      NSApp.activate(ignoringOtherApps: true)
+      panel.makeKeyAndOrderFront(nil)
+      self.startOutsideClickMonitoring()
+      self.emitEvent(name: "onPopoverShow", body: ["position": "mouse"])
+      return
+    }
+
+    // position == "menubar"
+    if self.mousePanel?.isVisible == true {
+      self.closeMousePanel()
+    }
+
+    self.ensurePopover()
+    guard let popover = self.popover else {
+      NSLog("[Pastey] PopoverModule.toggleInternal: popover could not be created")
+      return
+    }
+
     if popover.isShown {
       self.stopOutsideClickMonitoring()
       popover.performClose(nil)
-      self.hideMousePositioningWindow()
       if SettingsWindowModule.shared?.isWindowVisible != true {
         NSApp.hide(nil)
       }
       return
     }
 
-    self.updateAppearance()
+    let menubarSize = NSSize(width: 420, height: 520)
+    popover.contentSize = menubarSize
+    self.hostingController?.preferredContentSize = menubarSize
+    self.popoverContainer?.frame = NSRect(origin: .zero, size: menubarSize)
 
-    if position == "mouse" {
-      let mouseLoc = NSEvent.mouseLocation
-      let mouseWin = self.mousePositioningWindow ?? {
-        let win = NSWindow(
-          contentRect: NSRect(x: 0, y: 0, width: 1, height: 1),
-          styleMask: .borderless,
-          backing: .buffered,
-          defer: false
-        )
-        win.isOpaque = false
-        win.backgroundColor = .clear
-        win.level = .floating
-        win.ignoresMouseEvents = true
-        self.mousePositioningWindow = win
-        return win
-      }()
-      self.mousePositioningWindow = mouseWin
-      mouseWin.setFrameOrigin(NSPoint(x: mouseLoc.x, y: mouseLoc.y))
-      mouseWin.orderFront(nil)
-
-      if let targetView = mouseWin.contentView {
-        popover.show(
-          relativeTo: targetView.bounds,
-          of: targetView,
-          preferredEdge: .minY
-        )
+    rootView.removeFromSuperview()
+    rootView.wantsLayer = true
+    rootView.layer?.backgroundColor = NSColor.clear.cgColor
+    rootView.frame = NSRect(origin: .zero, size: menubarSize)
+    rootView.autoresizingMask = [.width, .height]
+    if let container = self.popoverContainer {
+      if !container.subviews.contains(rootView) {
+        container.addSubview(rootView)
       }
-    } else {
-      guard let button = appDelegate.statusItemButton() else {
-        NSLog("[Pastey] PopoverModule.toggleInternal: statusItemButton unavailable")
-        return
-      }
-      popover.show(
-        relativeTo: button.bounds,
-        of: button,
-        preferredEdge: .minY
-      )
     }
+    rootView.needsLayout = true
+    rootView.layoutSubtreeIfNeeded()
+
+    guard let button = appDelegate.statusItemButton() else {
+      NSLog("[Pastey] PopoverModule.toggleInternal: statusItemButton unavailable")
+      return
+    }
+
+    self.updateAppearance()
+    popover.show(
+      relativeTo: button.bounds,
+      of: button,
+      preferredEdge: .minY
+    )
 
     NSApp.activate(ignoringOtherApps: true)
     if let window = popover.contentViewController?.view.window {
       window.makeKey()
-      self.setupResizableWindow(window)
+      window.styleMask.remove(.resizable)
+      window.showsResizeIndicator = false
     }
     self.startOutsideClickMonitoring()
-    self.emitEvent(name: "onPopoverShow", body: nil)
+    self.emitEvent(name: "onPopoverShow", body: ["position": "menubar"])
   }
 
   @objc func show(
@@ -151,43 +272,7 @@ class PopoverModule: RCTEventEmitter {
     rejecter reject: @escaping RCTPromiseRejectBlock
   ) {
     DispatchQueue.main.async {
-      guard let appDelegate = NSApp.delegate as? AppDelegate,
-            let button = appDelegate.statusItemButton() else {
-        reject("no_button", "Status item button not available", nil)
-        return
-      }
-
-      self.ensurePopover()
-      guard let popover = self.popover else {
-        reject("no_popover", "Popover creation failed", nil)
-        return
-      }
-
-      if popover.isShown {
-        self.stopOutsideClickMonitoring()
-        popover.performClose(nil)
-        self.hideMousePositioningWindow()
-        if SettingsWindowModule.shared?.isWindowVisible != true {
-          NSApp.hide(nil)
-        }
-        resolve(true)
-        return
-      }
-
-      self.updateAppearance()
-
-      popover.show(
-        relativeTo: button.bounds,
-        of: button,
-        preferredEdge: .minY
-      )
-      NSApp.activate(ignoringOtherApps: true)
-      if let window = popover.contentViewController?.view.window {
-        window.makeKey()
-        self.setupResizableWindow(window)
-      }
-      self.startOutsideClickMonitoring()
-      self.emitEvent(name: "onPopoverShow", body: nil)
+      self.toggleInternal(position: "menubar")
       resolve(true)
     }
   }
@@ -199,7 +284,7 @@ class PopoverModule: RCTEventEmitter {
     DispatchQueue.main.async {
       self.stopOutsideClickMonitoring()
       self.popover?.performClose(nil)
-      self.hideMousePositioningWindow()
+      self.closeMousePanel()
       if SettingsWindowModule.shared?.isWindowVisible != true {
         NSApp.hide(nil)
       }
@@ -227,9 +312,10 @@ class PopoverModule: RCTEventEmitter {
       }
 
       self.keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
-        guard let self = self, let pop = self.popover, pop.isShown else {
-          return event
-        }
+        guard let self = self else { return event }
+        let isVisible = (self.popover?.isShown == true) || (self.mousePanel?.isVisible == true)
+        guard isVisible else { return event }
+
         switch Int(event.keyCode) {
         case 125:
           self.emitEvent(name: "onKey", body: ["key": "down"])
@@ -253,21 +339,12 @@ class PopoverModule: RCTEventEmitter {
   private func ensurePopover() {
     if popover != nil { return }
 
-    guard let appDelegate = NSApp.delegate as? AppDelegate,
-          let rootView = appDelegate.pasteyRootView() else {
-      return
-    }
-
-    let savedWidth = UserDefaults.standard.double(forKey: "historyWidth")
-    let savedHeight = UserDefaults.standard.double(forKey: "historyHeight")
-    let initialWidth: CGFloat = savedWidth >= 320 ? CGFloat(savedWidth) : 420
-    let initialHeight: CGFloat = savedHeight >= 360 ? CGFloat(savedHeight) : 520
-    let initialSize = NSSize(width: initialWidth, height: initialHeight)
+    let defaultSize = NSSize(width: 420, height: 520)
 
     let pop = NSPopover()
     pop.behavior = .transient
     pop.animates = true
-    pop.contentSize = initialSize
+    pop.contentSize = defaultSize
 
     let delegate = PopoverDelegate()
     delegate.onClose = { [weak self] in
@@ -277,43 +354,22 @@ class PopoverModule: RCTEventEmitter {
     pop.delegate = delegate
     self.popoverDelegate = delegate
 
+    let container = NSView(frame: NSRect(origin: .zero, size: defaultSize))
+    container.wantsLayer = true
+    container.autoresizingMask = [.width, .height]
+
     let controller = NSViewController()
-    rootView.wantsLayer = true
-    rootView.layer?.backgroundColor = NSColor.clear.cgColor
-    rootView.frame = NSRect(origin: .zero, size: initialSize)
-    rootView.autoresizingMask = [.width, .height]
-    controller.view = rootView
+    controller.view = container
 
     pop.contentViewController = controller
     self.hostingController = controller
+    self.popoverContainer = container
     self.popover = pop
     self.updateAppearance()
   }
 
-  private func setupResizableWindow(_ window: NSWindow) {
-    window.styleMask.insert(.resizable)
-    window.showsResizeIndicator = true
-    window.minSize = NSSize(width: 320, height: 360)
-    window.maxSize = NSSize(width: 900, height: 1200)
-
-    if windowResizeObserver == nil {
-      windowResizeObserver = NotificationCenter.default.addObserver(
-        forName: NSWindow.didResizeNotification,
-        object: window,
-        queue: .main
-      ) { notification in
-        guard let win = notification.object as? NSWindow else { return }
-        let contentSize = win.contentView?.bounds.size ?? win.frame.size
-        let clampedW = max(320, min(900, contentSize.width))
-        let clampedH = max(360, min(1200, contentSize.height))
-        UserDefaults.standard.set(Double(clampedW), forKey: "historyWidth")
-        UserDefaults.standard.set(Double(clampedH), forKey: "historyHeight")
-      }
-    }
-  }
-
   func hideMousePositioningWindow() {
-    mousePositioningWindow?.orderOut(nil)
+    closeMousePanel()
   }
 
   @objc func setContentSize(
@@ -323,21 +379,33 @@ class PopoverModule: RCTEventEmitter {
     rejecter reject: @escaping RCTPromiseRejectBlock
   ) {
     DispatchQueue.main.async {
-      guard let popover = self.popover else {
+      // Resizing is ONLY supported for mousePanel
+      guard let panel = self.mousePanel, panel.isVisible else {
         resolve(false)
         return
       }
+
       let clampedWidth = max(320, min(900, width.doubleValue))
       let clampedHeight = max(360, min(1200, height.doubleValue))
       let size = NSSize(width: clampedWidth, height: clampedHeight)
 
-      let prevAnimates = popover.animates
-      popover.animates = false
-      popover.contentSize = size
-      popover.animates = prevAnimates
-
       UserDefaults.standard.set(clampedWidth, forKey: "historyWidth")
       UserDefaults.standard.set(clampedHeight, forKey: "historyHeight")
+
+      let topY = panel.frame.maxY
+      let newOriginY = topY - clampedHeight
+      let newFrame = NSRect(x: panel.frame.origin.x, y: newOriginY, width: clampedWidth, height: clampedHeight)
+      panel.setFrame(newFrame, display: true, animate: false)
+      if let effect = self.mouseVisualEffect {
+        effect.frame = NSRect(origin: .zero, size: size)
+      }
+      if let appDelegate = NSApp.delegate as? AppDelegate,
+         let rootView = appDelegate.pasteyRootView() {
+        rootView.frame = NSRect(origin: .zero, size: size)
+        rootView.needsLayout = true
+        rootView.layoutSubtreeIfNeeded()
+      }
+
       resolve(true)
     }
   }
@@ -348,7 +416,7 @@ class PopoverModule: RCTEventEmitter {
     outsideClickGlobalMonitor = NSEvent.addGlobalMonitorForEvents(
       matching: [.leftMouseDown, .rightMouseDown]
     ) { [weak self] _ in
-      guard let self = self, let pop = self.popover, pop.isShown else { return }
+      guard let self = self else { return }
       DispatchQueue.main.async {
         self.handleOutsideClick(at: NSEvent.mouseLocation)
       }
@@ -357,10 +425,18 @@ class PopoverModule: RCTEventEmitter {
     outsideClickLocalMonitor = NSEvent.addLocalMonitorForEvents(
       matching: [.leftMouseDown, .rightMouseDown]
     ) { [weak self] event in
-      guard let self = self, let pop = self.popover, pop.isShown else { return event }
+      guard let self = self else { return event }
 
       let clickLoc = NSEvent.mouseLocation
-      if let window = pop.contentViewController?.view.window {
+
+      if let panel = self.mousePanel, panel.isVisible {
+        if panel.frame.contains(clickLoc) {
+          return event
+        }
+      }
+
+      if let pop = self.popover, pop.isShown,
+         let window = pop.contentViewController?.view.window {
         if window.frame.contains(clickLoc) {
           return event
         }
@@ -372,9 +448,9 @@ class PopoverModule: RCTEventEmitter {
 
       if let settingsWin = SettingsWindowModule.shared?.window,
          settingsWin.isVisible, settingsWin.frame.contains(clickLoc) {
-        self.stopOutsideClickMonitoring()
+        self.closeMousePanel()
         self.popover?.performClose(nil)
-        self.hideMousePositioningWindow()
+        self.stopOutsideClickMonitoring()
         return event
       }
 
@@ -387,9 +463,9 @@ class PopoverModule: RCTEventEmitter {
         }
       }
 
-      self.stopOutsideClickMonitoring()
+      self.closeMousePanel()
       self.popover?.performClose(nil)
-      self.hideMousePositioningWindow()
+      self.stopOutsideClickMonitoring()
       return event
     }
   }
@@ -406,11 +482,22 @@ class PopoverModule: RCTEventEmitter {
   }
 
   private func handleOutsideClick(at screenPoint: NSPoint) {
-    guard let pop = self.popover, pop.isShown else { return }
-    guard let window = pop.contentViewController?.view.window else { return }
+    var anyClosed = false
 
-    if window.frame.contains(screenPoint) {
-      return
+    if let panel = self.mousePanel, panel.isVisible {
+      if panel.frame.contains(screenPoint) {
+        return
+      }
+      self.closeMousePanel()
+      anyClosed = true
+    }
+
+    if let pop = self.popover, pop.isShown {
+      if let window = pop.contentViewController?.view.window, window.frame.contains(screenPoint) {
+        return
+      }
+      self.popover?.performClose(nil)
+      anyClosed = true
     }
 
     if let panel = self.previewPanel, panel.isVisible, panel.frame.contains(screenPoint) {
@@ -419,17 +506,14 @@ class PopoverModule: RCTEventEmitter {
 
     if let settingsWin = SettingsWindowModule.shared?.window,
        settingsWin.isVisible, settingsWin.frame.contains(screenPoint) {
-      self.stopOutsideClickMonitoring()
-      self.popover?.performClose(nil)
-      self.hideMousePositioningWindow()
       return
     }
 
-    self.stopOutsideClickMonitoring()
-    self.popover?.performClose(nil)
-    self.hideMousePositioningWindow()
-    if SettingsWindowModule.shared?.isWindowVisible != true {
-      NSApp.hide(nil)
+    if anyClosed {
+      self.stopOutsideClickMonitoring()
+      if SettingsWindowModule.shared?.isWindowVisible != true {
+        NSApp.hide(nil)
+      }
     }
   }
 
@@ -438,8 +522,8 @@ class PopoverModule: RCTEventEmitter {
     rejecter reject: @escaping RCTPromiseRejectBlock
   ) {
     DispatchQueue.main.async {
-      guard let popover = self.popover, popover.isShown,
-            let window = popover.contentViewController?.view.window else {
+      let parentWindow: NSWindow? = (self.popover?.isShown == true ? self.popover?.contentViewController?.view.window : nil) ?? (self.mousePanel?.isVisible == true ? self.mousePanel : nil)
+      guard let window = parentWindow else {
         resolve(false)
         return
       }
@@ -550,6 +634,8 @@ class PopoverModule: RCTEventEmitter {
       }
       self.popover?.appearance = resolvedAppearance
       self.previewPanel?.appearance = resolvedAppearance
+      self.mousePanel?.appearance = resolvedAppearance
+      self.mouseVisualEffect?.appearance = resolvedAppearance
       if let window = self.popover?.contentViewController?.view.window {
         window.appearance = resolvedAppearance
       }

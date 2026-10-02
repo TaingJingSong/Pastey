@@ -64,7 +64,12 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
     const initialKey = settings.shortcutKey ?? Key.V;
     const initialMod = settings.shortcutModifiers ?? (Mod.cmd + Mod.shift);
 
-    await Hotkey.register(initialKey, initialMod);
+    try {
+      await Hotkey.register(initialKey, initialMod);
+    } catch (error) {
+      console.warn('[historyStore] Failed to register global hotkey:', error);
+    }
+
     hotkeySub = Hotkey.subscribe(() => {
       const position = useSettingsStore.getState().values.historyPosition ?? 'menubar';
       Popover.toggle(position);
@@ -162,5 +167,5 @@ export function disposeHistory() {
   hotkeySub?.remove();
   hotkeySub = null;
   ClipboardMonitor.stop();
-  Hotkey.unregister();
+  Hotkey.unregister().catch(() => {});
 }

@@ -264,10 +264,27 @@ it('hover preview is transient (closes on mouse leave), while click preview rema
   });
 });
 
-it('renders interactive resize handles in popover mode and resizes window', async () => {
+it('does not render resize handles when opened from menubar', async () => {
   let tree: any;
   await act(async () => {
-    tree = renderer.create(<App mode="popover" />);
+    tree = renderer.create(<App mode="popover" position="menubar" />);
+    await new Promise(resolve => setTimeout(resolve, 50));
+  });
+  currentTree = tree;
+
+  const rightHandles = tree.root.findAllByProps({ testID: 'resize-handle-right' });
+  const bottomHandles = tree.root.findAllByProps({ testID: 'resize-handle-bottom' });
+  const cornerGrips = tree.root.findAllByProps({ testID: 'resize-grip' });
+
+  expect(rightHandles.length).toBe(0);
+  expect(bottomHandles.length).toBe(0);
+  expect(cornerGrips.length).toBe(0);
+});
+
+it('renders interactive resize handles only in mouse position mode and resizes window', async () => {
+  let tree: any;
+  await act(async () => {
+    tree = renderer.create(<App mode="popover" position="mouse" />);
     await new Promise(resolve => setTimeout(resolve, 50));
   });
   currentTree = tree;

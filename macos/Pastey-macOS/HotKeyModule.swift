@@ -7,8 +7,14 @@ private let PASTEY_SIGNATURE: OSType = 0x50535459 // 'PSTY'
 @objc(HotkeyModule)
 class HotkeyModule: RCTEventEmitter {
 
-  private var hotKeyRef: EventHotKeyRef?
-  private var eventHandler: EventHandlerRef?
+  private static var hotKeyRef: EventHotKeyRef?
+  private static var eventHandler: EventHandlerRef?
+  private static weak var shared: HotkeyModule?
+
+  override init() {
+    super.init()
+    HotkeyModule.shared = self
+  }
 
   override func supportedEvents() -> [String]! {
     return ["onHotkey"]
@@ -18,6 +24,17 @@ class HotkeyModule: RCTEventEmitter {
     return true
   }
 
+  @objc override func invalidate() {
+    DispatchQueue.main.async {
+      HotkeyModule.unregisterInternal()
+    }
+    super.invalidate()
+  }
+
+  deinit {
+    HotkeyModule.unregisterInternal()
+  }
+
   @objc func register(
     _ keyCode: NSNumber,
     modifiers: NSNumber,
@@ -25,7 +42,8 @@ class HotkeyModule: RCTEventEmitter {
     rejecter reject: @escaping RCTPromiseRejectBlock
   ) {
     DispatchQueue.main.async {
-      self.unregisterInternal()
+      HotkeyModule.shared = self
+      HotkeyModule.unregisterInternal()
 
       var hotKeyID = EventHotKeyID()
       hotKeyID.signature = PASTEY_SIGNATURE
@@ -46,8 +64,8 @@ class HotkeyModule: RCTEventEmitter {
         return
       }
 
-      self.hotKeyRef = hotKey
-      self.installHandlerIfNeeded()
+      HotkeyModule.hotKeyRef = hotKey
+      HotkeyModule.installHandlerIfNeeded()
       resolve(true)
     }
   }
@@ -57,12 +75,12 @@ class HotkeyModule: RCTEventEmitter {
     rejecter reject: @escaping RCTPromiseRejectBlock
   ) {
     DispatchQueue.main.async {
-      self.unregisterInternal()
+      HotkeyModule.unregisterInternal()
       resolve(true)
     }
   }
 
-  private func unregisterInternal() {
+  private static func unregisterInternal() {
     if let ref = hotKeyRef {
       UnregisterEventHotKey(ref)
       hotKeyRef = nil
@@ -73,7 +91,7 @@ class HotkeyModule: RCTEventEmitter {
     }
   }
 
-  private func installHandlerIfNeeded() {
+  private static func installHandlerIfNeeded() {
     guard eventHandler == nil else { return }
 
     var spec = EventTypeSpec(
@@ -81,13 +99,10 @@ class HotkeyModule: RCTEventEmitter {
       eventKind: UInt32(kEventHotKeyPressed)
     )
 
-    let callback: EventHandlerUPP = { _, event, userData -> OSStatus in
-      guard let userData = userData, let event = event else {
+    let callback: EventHandlerUPP = { _, event, _ -> OSStatus in
+      guard let event = event else {
         return OSStatus(eventNotHandledErr)
       }
-      let module = Unmanaged<HotkeyModule>
-        .fromOpaque(userData)
-        .takeUnretainedValue()
 
       var hotKeyID = EventHotKeyID()
       GetEventParameter(
@@ -101,7 +116,7 @@ class HotkeyModule: RCTEventEmitter {
       )
 
       if hotKeyID.signature == PASTEY_SIGNATURE {
-        module.sendEvent(withName: "onHotkey", body: nil)
+        HotkeyModule.shared?.sendEvent(withName: "onHotkey", body: nil)
       }
       return noErr
     }
@@ -111,7 +126,7 @@ class HotkeyModule: RCTEventEmitter {
       callback,
       1,
       &spec,
-      Unmanaged.passUnretained(self).toOpaque(),
+      nil,
       &eventHandler
     )
   }

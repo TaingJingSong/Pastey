@@ -8,6 +8,10 @@ export interface KeyPayload {
   key: 'up' | 'down' | 'enter' | 'escape' | string;
 }
 
+export interface ShowPayload {
+  position?: 'menubar' | 'mouse' | string;
+}
+
 export const Popover = {
   show(sourceViewTag = 0): Promise<boolean> {
     if (!native?.show) {
@@ -48,7 +52,7 @@ export const Popover = {
     }
     return native.hidePreview();
   },
-  onShow(callback: () => void) {
+  onShow(callback: (payload?: ShowPayload) => void) {
     if (!emitter) {
       return { remove: () => {} };
     }
