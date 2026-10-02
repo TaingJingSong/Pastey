@@ -138,7 +138,10 @@
   NSStatusBarButton *button = self.pasteyStatusItem.button;
   button.toolTip = @"Pastey";
 
-  NSImage *icon = [NSImage imageNamed:NSImageNameApplicationIcon];
+  NSImage *icon = [NSImage imageNamed:@"StatusBarIcon"];
+  if (icon == nil) {
+    icon = [NSImage imageNamed:NSImageNameApplicationIcon];
+  }
   if (icon == nil) {
     icon = [NSImage imageNamed:@"AppIcon"];
   }
