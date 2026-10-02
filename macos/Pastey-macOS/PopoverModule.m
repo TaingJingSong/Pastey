@@ -10,7 +10,8 @@ RCT_EXTERN_METHOD(show:(nonnull NSNumber *)sourceViewTag
 RCT_EXTERN_METHOD(hide:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
-RCT_EXTERN_METHOD(toggle:(RCTPromiseResolveBlock)resolve
+RCT_EXTERN_METHOD(toggle:(NSString *)position
+                  resolve:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
 RCT_EXTERN_METHOD(attachKeyMonitor)

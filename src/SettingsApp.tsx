@@ -10,11 +10,19 @@ import {
 } from 'react-native';
 import { useSettingsStore } from './store/settingsStore';
 import { useTheme } from './theme';
+import { Popover } from './native/PopoverModule';
+
+const SHORTCUT_PRESETS = [
+  { label: '⌘⇧V', key: 9, modifiers: 0x0100 + 0x0200 },
+  { label: '⌘⌥V', key: 9, modifiers: 0x0100 + 0x0800 },
+  { label: '⌃⌥V', key: 9, modifiers: 0x1000 + 0x0800 },
+  { label: '⌥Space', key: 49, modifiers: 0x0800 },
+] as const;
 
 // Deliberately does not touch the history store: calling its init() here would
 // start a second clipboard monitor and register the global hotkey twice.
 function SettingsApp(): React.JSX.Element {
-  const { values, ready, load, update } = useSettingsStore();
+  const { values, ready, load, update, updateShortcut } = useSettingsStore();
   const { colors } = useTheme();
   const [draft, setDraft] = useState<string | null>(null);
   const [newBundleId, setNewBundleId] = useState('');
@@ -200,6 +208,141 @@ function SettingsApp(): React.JSX.Element {
       </View>
       <Text style={[styles.hint, { color: colors.secondaryText }]}>
         Start Pastey automatically when logging into your Mac.
+      </Text>
+
+      <View style={[styles.row, styles.marginTopRow]}>
+        <Text style={[styles.label, { color: colors.text }]}>Shortcut</Text>
+        <View
+          testID="shortcut-selector"
+          style={[
+            styles.themeSelector,
+            {
+              backgroundColor: colors.segmentBg,
+              borderColor: colors.segmentBorder,
+            },
+          ]}
+        >
+          {SHORTCUT_PRESETS.map(preset => {
+            const isSelected =
+              values.shortcutKey === preset.key &&
+              values.shortcutModifiers === preset.modifiers;
+            return (
+              <Pressable
+                key={preset.label}
+                testID={`shortcut-option-${preset.label}`}
+                style={({ pressed }) => [
+                  styles.themeOption,
+                  isSelected && [
+                    styles.themeOptionSelected,
+                    { backgroundColor: colors.segmentSelectedBg },
+                  ],
+                  pressed && !isSelected && styles.themeOptionPressed,
+                ]}
+                onPress={() =>
+                  updateShortcut(preset.key, preset.modifiers, preset.label)
+                }
+                disabled={!ready}
+              >
+                <Text
+                  style={[
+                    styles.themeOptionText,
+                    {
+                      color: isSelected
+                        ? colors.segmentSelectedText
+                        : colors.secondaryText,
+                    },
+                    isSelected && styles.themeOptionTextSelected,
+                  ]}
+                >
+                  {preset.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </View>
+      <Text style={[styles.hint, { color: colors.secondaryText }]}>
+        Global keyboard shortcut to toggle clipboard history.
+      </Text>
+
+      <View style={[styles.row, styles.marginTopRow]}>
+        <Text style={[styles.label, { color: colors.text }]}>Show history at</Text>
+        <View
+          testID="history-position-selector"
+          style={[
+            styles.themeSelector,
+            {
+              backgroundColor: colors.segmentBg,
+              borderColor: colors.segmentBorder,
+            },
+          ]}
+        >
+          {(
+            [
+              { id: 'menubar', label: 'Menu bar' },
+              { id: 'mouse', label: 'Mouse position' },
+            ] as const
+          ).map(option => {
+            const isSelected = (values.historyPosition ?? 'menubar') === option.id;
+            return (
+              <Pressable
+                key={option.id}
+                testID={`history-position-option-${option.id}`}
+                style={({ pressed }) => [
+                  styles.themeOption,
+                  isSelected && [
+                    styles.themeOptionSelected,
+                    { backgroundColor: colors.segmentSelectedBg },
+                  ],
+                  pressed && !isSelected && styles.themeOptionPressed,
+                ]}
+                onPress={() => update('historyPosition', option.id)}
+                disabled={!ready}
+              >
+                <Text
+                  style={[
+                    styles.themeOptionText,
+                    {
+                      color: isSelected
+                        ? colors.segmentSelectedText
+                        : colors.secondaryText,
+                    },
+                    isSelected && styles.themeOptionTextSelected,
+                  ]}
+                >
+                  {option.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </View>
+      <Text style={[styles.hint, { color: colors.secondaryText }]}>
+        Choose whether the history window opens from the menu bar or at your mouse cursor.
+      </Text>
+
+      <View style={[styles.row, styles.marginTopRow]}>
+        <Text style={[styles.label, { color: colors.text }]}>Window size</Text>
+        <Pressable
+          testID="reset-window-size-button"
+          style={({ pressed }) => [
+            styles.resetSizeButton,
+            {
+              borderColor: colors.cardBorder,
+              backgroundColor: colors.cardBg,
+            },
+            pressed && { opacity: 0.7 },
+          ]}
+          onPress={() => Popover.setContentSize(420, 520)}
+          disabled={!ready}
+        >
+          <Text style={[styles.resetSizeText, { color: colors.text }]}>
+            Reset Size (420 × 520)
+          </Text>
+        </Pressable>
+      </View>
+      <Text style={[styles.hint, { color: colors.secondaryText }]}>
+        Drag borders or corners of the history window to resize. Click above to reset.
       </Text>
 
       <View style={[styles.divider, { backgroundColor: colors.divider }]} />
@@ -435,6 +578,16 @@ const styles = StyleSheet.create({
     padding: 14,
     fontSize: 12,
     textAlign: 'center',
+  },
+  resetSizeButton: {
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 5,
+    borderWidth: 1,
+  },
+  resetSizeText: {
+    fontSize: 12,
+    fontWeight: '500',
   },
 });
 

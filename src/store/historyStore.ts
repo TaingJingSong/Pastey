@@ -13,6 +13,7 @@ import {
 } from '../db/queries';
 import { Hotkey, Key, Mod } from '../native/HotkeyModule';
 import { initSchema } from '../db/schema';
+import { useSettingsStore } from './settingsStore';
 
 export interface HistoryState {
   items: ClipItem[];
@@ -59,10 +60,14 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
       get().onClipboard(payload);
     });
 
-    // Cmd + Shift + V or Cmd + Option + V
-    await Hotkey.register(Key.V, Mod.cmd + Mod.shift);
+    const settings = useSettingsStore.getState().values;
+    const initialKey = settings.shortcutKey ?? Key.V;
+    const initialMod = settings.shortcutModifiers ?? (Mod.cmd + Mod.shift);
+
+    await Hotkey.register(initialKey, initialMod);
     hotkeySub = Hotkey.subscribe(() => {
-      Popover.toggle();
+      const position = useSettingsStore.getState().values.historyPosition ?? 'menubar';
+      Popover.toggle(position);
     });
   },
 

@@ -62,6 +62,10 @@ beforeEach(() => {
         previewLayout: 'popup',
         theme: 'system',
         systemTheme: 'light',
+        historyPosition: 'menubar',
+        shortcutKey: 9,
+        shortcutModifiers: 0x0100 + 0x0200,
+        shortcutLabel: '⌘⇧V',
         excludedApps: [
           'com.1password.1password',
           'com.agilebits.onepassword',
@@ -138,6 +142,57 @@ it('selecting theme option updates store and persists to native settings module'
 
   expect(settings.set).toHaveBeenCalledWith('theme', 'system');
   expect(useSettingsStore.getState().values.theme).toBe('system');
+});
+
+it('selecting shortcut option updates store, persists settings, and registers hotkey', async () => {
+  const tree = await mount();
+  const optionButton = tree.root.findByProps({ testID: 'shortcut-option-⌥Space' });
+
+  await act(async () => {
+    optionButton.props.onPress();
+    await new Promise(resolve => setTimeout(resolve, 50));
+  });
+
+  expect(settings.set).toHaveBeenCalledWith('shortcutKey', 49);
+  expect(settings.set).toHaveBeenCalledWith('shortcutModifiers', 0x0800);
+  expect(settings.set).toHaveBeenCalledWith('shortcutLabel', '⌥Space');
+  expect(NativeModules.HotkeyModule.register).toHaveBeenCalledWith(49, 0x0800);
+  expect(useSettingsStore.getState().values.shortcutKey).toBe(49);
+  expect(useSettingsStore.getState().values.shortcutLabel).toBe('⌥Space');
+});
+
+it('selecting history position option updates store and persists to native settings module', async () => {
+  const tree = await mount();
+  const mouseButton = tree.root.findByProps({ testID: 'history-position-option-mouse' });
+
+  await act(async () => {
+    mouseButton.props.onPress();
+    await new Promise(resolve => setTimeout(resolve, 50));
+  });
+
+  expect(settings.set).toHaveBeenCalledWith('historyPosition', 'mouse');
+  expect(useSettingsStore.getState().values.historyPosition).toBe('mouse');
+
+  const menubarButton = tree.root.findByProps({ testID: 'history-position-option-menubar' });
+  await act(async () => {
+    menubarButton.props.onPress();
+    await new Promise(resolve => setTimeout(resolve, 50));
+  });
+
+  expect(settings.set).toHaveBeenCalledWith('historyPosition', 'menubar');
+  expect(useSettingsStore.getState().values.historyPosition).toBe('menubar');
+});
+
+it('pressing reset window size button calls Popover.setContentSize with default dimensions', async () => {
+  const tree = await mount();
+  const resetButton = tree.root.findByProps({ testID: 'reset-window-size-button' });
+
+  await act(async () => {
+    resetButton.props.onPress();
+    await new Promise(resolve => setTimeout(resolve, 50));
+  });
+
+  expect(NativeModules.PopoverModule.setContentSize).toHaveBeenCalledWith(420, 520);
 });
 
 it('committing a value writes it through to the native settings module', async () => {

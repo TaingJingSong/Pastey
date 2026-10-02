@@ -20,6 +20,7 @@ export type ThemePreference = 'system' | 'light' | 'dark';
 export type SystemTheme = 'light' | 'dark';
 export type PreviewLines = 1 | 2 | 3;
 export type PreviewLayout = 'popup' | 'side';
+export type HistoryPosition = 'menubar' | 'mouse';
 
 export const DEFAULT_SETTINGS = {
   maxItems: 500,
@@ -29,6 +30,10 @@ export const DEFAULT_SETTINGS = {
   previewLayout: 'popup' as PreviewLayout,
   theme: 'system' as ThemePreference,
   systemTheme: 'light' as SystemTheme,
+  historyPosition: 'menubar' as HistoryPosition,
+  shortcutKey: 9, // Key.V
+  shortcutModifiers: 0x0100 + 0x0200, // Mod.cmd + Mod.shift (768)
+  shortcutLabel: '⌘⇧V',
   excludedApps: [
     'com.1password.1password',
     'com.agilebits.onepassword',
@@ -46,6 +51,10 @@ export type Settings = {
   previewLayout: PreviewLayout;
   theme: ThemePreference;
   systemTheme: SystemTheme;
+  historyPosition: HistoryPosition;
+  shortcutKey: number;
+  shortcutModifiers: number;
+  shortcutLabel: string;
   excludedApps: string[];
 };
 
@@ -78,6 +87,23 @@ export async function readSetting<K extends SettingsKey>(
       return stored as Settings[K];
     }
     return DEFAULT_SETTINGS.previewLayout as Settings[K];
+  }
+  if (key === 'historyPosition') {
+    if (stored === 'mouse' || stored === 'menubar') {
+      return stored as Settings[K];
+    }
+    return DEFAULT_SETTINGS.historyPosition as Settings[K];
+  }
+  if (key === 'shortcutKey') {
+    const num = Number(stored);
+    return (Number.isNaN(num) ? DEFAULT_SETTINGS.shortcutKey : num) as Settings[K];
+  }
+  if (key === 'shortcutModifiers') {
+    const num = Number(stored);
+    return (Number.isNaN(num) ? DEFAULT_SETTINGS.shortcutModifiers : num) as Settings[K];
+  }
+  if (key === 'shortcutLabel') {
+    return (typeof stored === 'string' ? stored : DEFAULT_SETTINGS.shortcutLabel) as Settings[K];
   }
   return stored as Settings[K];
 }
@@ -115,6 +141,19 @@ export async function readAllSettings(): Promise<Partial<Settings>> {
           value === 'popup' || value === 'side'
             ? (value as PreviewLayout)
             : DEFAULT_SETTINGS.previewLayout;
+      } else if (key === 'historyPosition') {
+        result.historyPosition =
+          value === 'mouse' || value === 'menubar'
+            ? (value as HistoryPosition)
+            : DEFAULT_SETTINGS.historyPosition;
+      } else if (key === 'shortcutKey') {
+        const num = Number(value);
+        result.shortcutKey = Number.isNaN(num) ? DEFAULT_SETTINGS.shortcutKey : num;
+      } else if (key === 'shortcutModifiers') {
+        const num = Number(value);
+        result.shortcutModifiers = Number.isNaN(num) ? DEFAULT_SETTINGS.shortcutModifiers : num;
+      } else if (key === 'shortcutLabel') {
+        result.shortcutLabel = typeof value === 'string' ? value : DEFAULT_SETTINGS.shortcutLabel;
       } else {
         result[key] = value as any;
       }

@@ -21,11 +21,11 @@ export const Popover = {
     }
     return native.hide();
   },
-  toggle(): Promise<boolean> {
+  toggle(position?: 'menubar' | 'mouse' | string): Promise<boolean> {
     if (!native?.toggle) {
       return Promise.resolve(false);
     }
-    return native.toggle();
+    return native.toggle(position ?? null);
   },
   attachKeyMonitor(): void {
     native?.attachKeyMonitor?.();

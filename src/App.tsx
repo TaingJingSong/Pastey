@@ -193,6 +193,13 @@ function App(props: AppProps): React.JSX.Element {
           onPreviewHoverStart={item => usePreviewStore.getState().cancelCloseHoverTimer(item.id)}
         />
       )}
+      {items.length > 0 && isPopover && (
+        <View testID="resize-grip" style={styles.resizeGrip} pointerEvents="none">
+          <View style={[styles.resizeBar, styles.resizeBarWide, { backgroundColor: colors.secondaryText }]} />
+          <View style={[styles.resizeBar, styles.resizeBarMedium, { backgroundColor: colors.secondaryText }]} />
+          <View style={[styles.resizeBar, styles.resizeBarNarrow, { backgroundColor: colors.secondaryText }]} />
+        </View>
+      )}
     </View>
   );
 }
@@ -203,8 +210,11 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   popoverContainer: {
-    width: 420,
-    height: 520,
+    flex: 1,
+    width: '100%',
+    height: '100%',
+    minWidth: 320,
+    minHeight: 360,
     padding: 0,
     backgroundColor: 'transparent',
   },
@@ -217,6 +227,31 @@ const styles = StyleSheet.create({
   empty: {
     fontSize: 13,
     textAlign: 'center',
+  },
+  resizeGrip: {
+    position: 'absolute',
+    bottom: 2,
+    right: 2,
+    width: 14,
+    height: 14,
+    alignItems: 'flex-end',
+    justifyContent: 'flex-end',
+    padding: 2,
+    gap: 1.5,
+    opacity: 0.35,
+  },
+  resizeBar: {
+    height: 1,
+    borderRadius: 0.5,
+  },
+  resizeBarWide: {
+    width: 10,
+  },
+  resizeBarMedium: {
+    width: 6,
+  },
+  resizeBarNarrow: {
+    width: 2,
   },
 });
 

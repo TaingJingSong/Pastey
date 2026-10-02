@@ -14,6 +14,7 @@ export interface SettingsState {
   ready: boolean;
   load: () => Promise<void>;
   update: <K extends SettingsKey>(key: K, value: Settings[K]) => Promise<void>;
+  updateShortcut: (keyCode: number, modifiers: number, label: string) => Promise<void>;
   setSystemTheme: (systemTheme: 'light' | 'dark') => void;
 }
 
@@ -39,6 +40,26 @@ export const useSettingsStore = create<SettingsState>(set => ({
       syncAppearance(value as ThemePreference);
     }
     await writeSetting(key, value);
+  },
+
+  updateShortcut: async (keyCode, modifiers, label) => {
+    set(state => ({
+      values: {
+        ...state.values,
+        shortcutKey: keyCode,
+        shortcutModifiers: modifiers,
+        shortcutLabel: label,
+      },
+    }));
+    try {
+      const { Hotkey } = require('../native/HotkeyModule');
+      await Hotkey.register(keyCode, modifiers);
+    } catch {
+      // Hotkey registration error handling
+    }
+    await writeSetting('shortcutKey', keyCode);
+    await writeSetting('shortcutModifiers', modifiers);
+    await writeSetting('shortcutLabel', label);
   },
 
   setSystemTheme: (systemTheme: 'light' | 'dark') => {
