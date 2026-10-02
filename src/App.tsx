@@ -103,6 +103,9 @@ function App(props: AppProps): React.JSX.Element {
       if (payload?.position === 'mouse' || payload?.position === 'menubar') {
         setDisplayPosition(payload.position);
       }
+      if (payload?.position === 'menubar') {
+        currentSizeRef.current = { width: 420, height: 520 };
+      }
       useHistoryStore.getState().refresh();
       setTimeout(() => {
         searchInputRef.current?.focus();
@@ -112,6 +115,7 @@ function App(props: AppProps): React.JSX.Element {
     const hideSub = Popover.onHide(() => {
       usePreviewStore.getState().closePreview();
       setDisplayPosition('menubar');
+      currentSizeRef.current = { width: 420, height: 520 };
     });
 
     const themeSub = Popover.onSystemThemeChanged(({ systemTheme }) => {

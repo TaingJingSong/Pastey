@@ -181,6 +181,10 @@ class PopoverModule: RCTEventEmitter {
       rootView.layer?.backgroundColor = NSColor.clear.cgColor
       rootView.frame = NSRect(origin: .zero, size: currentSize)
       rootView.autoresizingMask = [.width, .height]
+      for subview in rootView.subviews {
+        subview.frame = NSRect(origin: .zero, size: currentSize)
+        subview.needsLayout = true
+      }
       if !effect.subviews.contains(rootView) {
         effect.addSubview(rootView)
       }
@@ -206,6 +210,15 @@ class PopoverModule: RCTEventEmitter {
 
       NSApp.activate(ignoringOtherApps: true)
       panel.makeKeyAndOrderFront(nil)
+
+      rootView.frame = NSRect(origin: .zero, size: currentSize)
+      for subview in rootView.subviews {
+        subview.frame = NSRect(origin: .zero, size: currentSize)
+        subview.needsLayout = true
+      }
+      rootView.needsLayout = true
+      rootView.layoutSubtreeIfNeeded()
+
       self.startOutsideClickMonitoring()
       self.emitEvent(name: "onPopoverShow", body: ["position": "mouse"])
       return
@@ -234,13 +247,16 @@ class PopoverModule: RCTEventEmitter {
     let menubarSize = NSSize(width: 420, height: 520)
     popover.contentSize = menubarSize
     self.hostingController?.preferredContentSize = menubarSize
-    self.popoverContainer?.frame = NSRect(origin: .zero, size: menubarSize)
 
     rootView.removeFromSuperview()
     rootView.wantsLayer = true
     rootView.layer?.backgroundColor = NSColor.clear.cgColor
     rootView.frame = NSRect(origin: .zero, size: menubarSize)
     rootView.autoresizingMask = [.width, .height]
+    for subview in rootView.subviews {
+      subview.frame = NSRect(origin: .zero, size: menubarSize)
+      subview.needsLayout = true
+    }
     if let container = self.popoverContainer {
       if !container.subviews.contains(rootView) {
         container.addSubview(rootView)
@@ -267,6 +283,15 @@ class PopoverModule: RCTEventEmitter {
       window.styleMask.remove(.resizable)
       window.showsResizeIndicator = false
     }
+
+    rootView.frame = NSRect(origin: .zero, size: menubarSize)
+    for subview in rootView.subviews {
+      subview.frame = NSRect(origin: .zero, size: menubarSize)
+      subview.needsLayout = true
+    }
+    rootView.needsLayout = true
+    rootView.layoutSubtreeIfNeeded()
+
     self.startOutsideClickMonitoring()
     self.emitEvent(name: "onPopoverShow", body: ["position": "menubar"])
   }
@@ -412,6 +437,10 @@ class PopoverModule: RCTEventEmitter {
       if let appDelegate = NSApp.delegate as? AppDelegate,
          let rootView = appDelegate.pasteyRootView() {
         rootView.frame = NSRect(origin: .zero, size: size)
+        for subview in rootView.subviews {
+          subview.frame = NSRect(origin: .zero, size: size)
+          subview.needsLayout = true
+        }
         rootView.needsLayout = true
         rootView.layoutSubtreeIfNeeded()
       }
