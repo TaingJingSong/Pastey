@@ -1,5 +1,13 @@
-import React, { useEffect, useRef } from 'react';
-import { Alert, StyleSheet, Text, TextInput, View } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  Alert,
+  LayoutChangeEvent,
+  PanResponder,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { HistoryList } from './components/HistoryList';
 import { SearchBar } from './components/SearchBar';
 import { useHistoryStore } from './store/historyStore';
@@ -147,6 +155,107 @@ function App(props: AppProps): React.JSX.Element {
     updateSetting('previewLines', next as 1 | 2 | 3);
   };
 
+  const currentSizeRef = useRef({ width: 420, height: 520 });
+  const startDragRef = useRef({ width: 420, height: 520 });
+  const [isResizing, setIsResizing] = useState(false);
+  const rafId = useRef<number | null>(null);
+
+  const applySize = (width: number, height: number) => {
+    currentSizeRef.current = { width, height };
+    if (rafId.current === null) {
+      rafId.current = requestAnimationFrame(() => {
+        rafId.current = null;
+        Popover.setContentSize(currentSizeRef.current.width, currentSizeRef.current.height);
+      });
+    }
+  };
+
+  const handleContainerLayout = (e: LayoutChangeEvent) => {
+    const { width, height } = e.nativeEvent.layout;
+    if (width >= 320 && height >= 360) {
+      currentSizeRef.current = { width: Math.round(width), height: Math.round(height) };
+    }
+  };
+
+  const cornerPanResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderGrant: () => {
+        setIsResizing(true);
+        startDragRef.current = { ...currentSizeRef.current };
+      },
+      onPanResponderMove: (_evt, gestureState) => {
+        const newWidth = Math.max(320, Math.min(900, Math.round(startDragRef.current.width + gestureState.dx)));
+        const newHeight = Math.max(360, Math.min(1200, Math.round(startDragRef.current.height + gestureState.dy)));
+        applySize(newWidth, newHeight);
+      },
+      onPanResponderRelease: () => {
+        setIsResizing(false);
+        if (rafId.current !== null) {
+          cancelAnimationFrame(rafId.current);
+          rafId.current = null;
+        }
+        Popover.setContentSize(currentSizeRef.current.width, currentSizeRef.current.height);
+      },
+      onPanResponderTerminate: () => {
+        setIsResizing(false);
+      },
+    })
+  ).current;
+
+  const rightEdgePanResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderGrant: () => {
+        setIsResizing(true);
+        startDragRef.current = { ...currentSizeRef.current };
+      },
+      onPanResponderMove: (_evt, gestureState) => {
+        const newWidth = Math.max(320, Math.min(900, Math.round(startDragRef.current.width + gestureState.dx)));
+        applySize(newWidth, currentSizeRef.current.height);
+      },
+      onPanResponderRelease: () => {
+        setIsResizing(false);
+        if (rafId.current !== null) {
+          cancelAnimationFrame(rafId.current);
+          rafId.current = null;
+        }
+        Popover.setContentSize(currentSizeRef.current.width, currentSizeRef.current.height);
+      },
+      onPanResponderTerminate: () => {
+        setIsResizing(false);
+      },
+    })
+  ).current;
+
+  const bottomEdgePanResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderGrant: () => {
+        setIsResizing(true);
+        startDragRef.current = { ...currentSizeRef.current };
+      },
+      onPanResponderMove: (_evt, gestureState) => {
+        const newHeight = Math.max(360, Math.min(1200, Math.round(startDragRef.current.height + gestureState.dy)));
+        applySize(currentSizeRef.current.width, newHeight);
+      },
+      onPanResponderRelease: () => {
+        setIsResizing(false);
+        if (rafId.current !== null) {
+          cancelAnimationFrame(rafId.current);
+          rafId.current = null;
+        }
+        Popover.setContentSize(currentSizeRef.current.width, currentSizeRef.current.height);
+      },
+      onPanResponderTerminate: () => {
+        setIsResizing(false);
+      },
+    })
+  ).current;
+
   const handleOpenSettings = async () => {
     await SettingsWindow.open();
   };
@@ -158,6 +267,7 @@ function App(props: AppProps): React.JSX.Element {
         { backgroundColor: colors.windowBackground },
         isPopover && styles.popoverContainer,
       ]}
+      onLayout={isPopover ? handleContainerLayout : undefined}
     >
       <SearchBar
         inputRef={searchInputRef}
@@ -193,12 +303,28 @@ function App(props: AppProps): React.JSX.Element {
           onPreviewHoverStart={item => usePreviewStore.getState().cancelCloseHoverTimer(item.id)}
         />
       )}
-      {items.length > 0 && isPopover && (
-        <View testID="resize-grip" style={styles.resizeGrip} pointerEvents="none">
-          <View style={[styles.resizeBar, styles.resizeBarWide, { backgroundColor: colors.secondaryText }]} />
-          <View style={[styles.resizeBar, styles.resizeBarMedium, { backgroundColor: colors.secondaryText }]} />
-          <View style={[styles.resizeBar, styles.resizeBarNarrow, { backgroundColor: colors.secondaryText }]} />
-        </View>
+      {isPopover && (
+        <>
+          <View
+            testID="resize-handle-right"
+            style={styles.resizeHandleRight}
+            {...rightEdgePanResponder.panHandlers}
+          />
+          <View
+            testID="resize-handle-bottom"
+            style={styles.resizeHandleBottom}
+            {...bottomEdgePanResponder.panHandlers}
+          />
+          <View
+            testID="resize-grip"
+            style={[styles.resizeGrip, isResizing && styles.resizeGripActive]}
+            {...cornerPanResponder.panHandlers}
+          >
+            <View style={[styles.resizeBar, styles.resizeBarWide, { backgroundColor: colors.secondaryText }]} />
+            <View style={[styles.resizeBar, styles.resizeBarMedium, { backgroundColor: colors.secondaryText }]} />
+            <View style={[styles.resizeBar, styles.resizeBarNarrow, { backgroundColor: colors.secondaryText }]} />
+          </View>
+        </>
       )}
     </View>
   );
@@ -230,15 +356,36 @@ const styles = StyleSheet.create({
   },
   resizeGrip: {
     position: 'absolute',
-    bottom: 2,
-    right: 2,
-    width: 14,
-    height: 14,
+    bottom: 0,
+    right: 0,
+    width: 24,
+    height: 24,
     alignItems: 'flex-end',
     justifyContent: 'flex-end',
-    padding: 2,
-    gap: 1.5,
+    paddingRight: 3,
+    paddingBottom: 3,
+    gap: 2,
     opacity: 0.35,
+    zIndex: 999,
+  },
+  resizeGripActive: {
+    opacity: 0.85,
+  },
+  resizeHandleRight: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 24,
+    width: 6,
+    zIndex: 998,
+  },
+  resizeHandleBottom: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 24,
+    height: 6,
+    zIndex: 998,
   },
   resizeBar: {
     height: 1,

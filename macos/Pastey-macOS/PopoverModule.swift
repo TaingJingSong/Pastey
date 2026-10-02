@@ -15,6 +15,8 @@ class PopoverModule: RCTEventEmitter {
   private var previewPanel: NSPanel?
   private var mousePositioningWindow: NSWindow?
   private var windowResizeObserver: NSObjectProtocol?
+  private var outsideClickGlobalMonitor: Any?
+  private var outsideClickLocalMonitor: Any?
 
   override init() {
     super.init()
@@ -84,6 +86,7 @@ class PopoverModule: RCTEventEmitter {
     }
 
     if popover.isShown {
+      self.stopOutsideClickMonitoring()
       popover.performClose(nil)
       self.hideMousePositioningWindow()
       if SettingsWindowModule.shared?.isWindowVisible != true {
@@ -138,6 +141,7 @@ class PopoverModule: RCTEventEmitter {
       window.makeKey()
       self.setupResizableWindow(window)
     }
+    self.startOutsideClickMonitoring()
     self.emitEvent(name: "onPopoverShow", body: nil)
   }
 
@@ -160,6 +164,7 @@ class PopoverModule: RCTEventEmitter {
       }
 
       if popover.isShown {
+        self.stopOutsideClickMonitoring()
         popover.performClose(nil)
         self.hideMousePositioningWindow()
         if SettingsWindowModule.shared?.isWindowVisible != true {
@@ -181,6 +186,7 @@ class PopoverModule: RCTEventEmitter {
         window.makeKey()
         self.setupResizableWindow(window)
       }
+      self.startOutsideClickMonitoring()
       self.emitEvent(name: "onPopoverShow", body: nil)
       resolve(true)
     }
@@ -191,6 +197,7 @@ class PopoverModule: RCTEventEmitter {
     rejecter reject: @escaping RCTPromiseRejectBlock
   ) {
     DispatchQueue.main.async {
+      self.stopOutsideClickMonitoring()
       self.popover?.performClose(nil)
       self.hideMousePositioningWindow()
       if SettingsWindowModule.shared?.isWindowVisible != true {
@@ -258,7 +265,7 @@ class PopoverModule: RCTEventEmitter {
     let initialSize = NSSize(width: initialWidth, height: initialHeight)
 
     let pop = NSPopover()
-    pop.behavior = .semitransient    // dismisses on click-outside application
+    pop.behavior = .transient
     pop.animates = true
     pop.contentSize = initialSize
 
@@ -294,12 +301,13 @@ class PopoverModule: RCTEventEmitter {
         forName: NSWindow.didResizeNotification,
         object: window,
         queue: .main
-      ) { [weak self] notification in
-        guard let self = self, let win = notification.object as? NSWindow else { return }
-        let newSize = win.frame.size
-        self.popover?.contentSize = newSize
-        UserDefaults.standard.set(Double(newSize.width), forKey: "historyWidth")
-        UserDefaults.standard.set(Double(newSize.height), forKey: "historyHeight")
+      ) { notification in
+        guard let win = notification.object as? NSWindow else { return }
+        let contentSize = win.contentView?.bounds.size ?? win.frame.size
+        let clampedW = max(320, min(900, contentSize.width))
+        let clampedH = max(360, min(1200, contentSize.height))
+        UserDefaults.standard.set(Double(clampedW), forKey: "historyWidth")
+        UserDefaults.standard.set(Double(clampedH), forKey: "historyHeight")
       }
     }
   }
@@ -315,19 +323,113 @@ class PopoverModule: RCTEventEmitter {
     rejecter reject: @escaping RCTPromiseRejectBlock
   ) {
     DispatchQueue.main.async {
-      let size = NSSize(width: width.doubleValue, height: height.doubleValue)
-      self.popover?.contentSize = size
-      UserDefaults.standard.set(Double(size.width), forKey: "historyWidth")
-      UserDefaults.standard.set(Double(size.height), forKey: "historyHeight")
-      if let view = self.popover?.contentViewController?.view {
-        view.frame = NSRect(origin: .zero, size: size)
-        if let window = view.window {
-          var frame = window.frame
-          frame.size = size
-          window.setFrame(frame, display: true, animate: false)
+      guard let popover = self.popover else {
+        resolve(false)
+        return
+      }
+      let clampedWidth = max(320, min(900, width.doubleValue))
+      let clampedHeight = max(360, min(1200, height.doubleValue))
+      let size = NSSize(width: clampedWidth, height: clampedHeight)
+
+      let prevAnimates = popover.animates
+      popover.animates = false
+      popover.contentSize = size
+      popover.animates = prevAnimates
+
+      UserDefaults.standard.set(clampedWidth, forKey: "historyWidth")
+      UserDefaults.standard.set(clampedHeight, forKey: "historyHeight")
+      resolve(true)
+    }
+  }
+
+  func startOutsideClickMonitoring() {
+    stopOutsideClickMonitoring()
+
+    outsideClickGlobalMonitor = NSEvent.addGlobalMonitorForEvents(
+      matching: [.leftMouseDown, .rightMouseDown]
+    ) { [weak self] _ in
+      guard let self = self, let pop = self.popover, pop.isShown else { return }
+      DispatchQueue.main.async {
+        self.handleOutsideClick(at: NSEvent.mouseLocation)
+      }
+    }
+
+    outsideClickLocalMonitor = NSEvent.addLocalMonitorForEvents(
+      matching: [.leftMouseDown, .rightMouseDown]
+    ) { [weak self] event in
+      guard let self = self, let pop = self.popover, pop.isShown else { return event }
+
+      let clickLoc = NSEvent.mouseLocation
+      if let window = pop.contentViewController?.view.window {
+        if window.frame.contains(clickLoc) {
+          return event
         }
       }
-      resolve(true)
+
+      if let panel = self.previewPanel, panel.isVisible, panel.frame.contains(clickLoc) {
+        return event
+      }
+
+      if let settingsWin = SettingsWindowModule.shared?.window,
+         settingsWin.isVisible, settingsWin.frame.contains(clickLoc) {
+        self.stopOutsideClickMonitoring()
+        self.popover?.performClose(nil)
+        self.hideMousePositioningWindow()
+        return event
+      }
+
+      if let appDelegate = NSApp.delegate as? AppDelegate,
+         let button = appDelegate.statusItemButton(),
+         let btnWindow = button.window {
+        let btnFrameOnScreen = btnWindow.convertToScreen(button.bounds)
+        if btnFrameOnScreen.contains(clickLoc) {
+          return event
+        }
+      }
+
+      self.stopOutsideClickMonitoring()
+      self.popover?.performClose(nil)
+      self.hideMousePositioningWindow()
+      return event
+    }
+  }
+
+  func stopOutsideClickMonitoring() {
+    if let monitor = outsideClickGlobalMonitor {
+      NSEvent.removeMonitor(monitor)
+      outsideClickGlobalMonitor = nil
+    }
+    if let monitor = outsideClickLocalMonitor {
+      NSEvent.removeMonitor(monitor)
+      outsideClickLocalMonitor = nil
+    }
+  }
+
+  private func handleOutsideClick(at screenPoint: NSPoint) {
+    guard let pop = self.popover, pop.isShown else { return }
+    guard let window = pop.contentViewController?.view.window else { return }
+
+    if window.frame.contains(screenPoint) {
+      return
+    }
+
+    if let panel = self.previewPanel, panel.isVisible, panel.frame.contains(screenPoint) {
+      return
+    }
+
+    if let settingsWin = SettingsWindowModule.shared?.window,
+       settingsWin.isVisible, settingsWin.frame.contains(screenPoint) {
+      self.stopOutsideClickMonitoring()
+      self.popover?.performClose(nil)
+      self.hideMousePositioningWindow()
+      return
+    }
+
+    self.stopOutsideClickMonitoring()
+    self.popover?.performClose(nil)
+    self.hideMousePositioningWindow()
+    if SettingsWindowModule.shared?.isWindowVisible != true {
+      NSApp.hide(nil)
     }
   }
 
@@ -469,6 +571,10 @@ class PopoverModule: RCTEventEmitter {
   }
 
   deinit {
+    stopOutsideClickMonitoring()
+    if let observer = windowResizeObserver {
+      NotificationCenter.default.removeObserver(observer)
+    }
     if let monitor = keyMonitor {
       NSEvent.removeMonitor(monitor)
     }
@@ -480,6 +586,7 @@ class PopoverDelegate: NSObject, NSPopoverDelegate {
   var onClose: (() -> Void)?
 
   func popoverDidClose(_ notification: Notification) {
+    PopoverModule.shared?.stopOutsideClickMonitoring()
     PopoverModule.shared?.dismissPreview()
     PopoverModule.shared?.hideMousePositioningWindow()
     if SettingsWindowModule.shared?.isWindowVisible != true {

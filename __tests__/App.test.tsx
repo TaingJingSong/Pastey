@@ -264,4 +264,29 @@ it('hover preview is transient (closes on mouse leave), while click preview rema
   });
 });
 
+it('renders interactive resize handles in popover mode and resizes window', async () => {
+  let tree: any;
+  await act(async () => {
+    tree = renderer.create(<App mode="popover" />);
+    await new Promise(resolve => setTimeout(resolve, 50));
+  });
+  currentTree = tree;
+
+  const rightHandle = tree.root.findByProps({ testID: 'resize-handle-right' });
+  const bottomHandle = tree.root.findByProps({ testID: 'resize-handle-bottom' });
+  const cornerGrip = tree.root.findByProps({ testID: 'resize-grip' });
+
+  expect(rightHandle).toBeDefined();
+  expect(bottomHandle).toBeDefined();
+  expect(cornerGrip).toBeDefined();
+
+  const mockEvent = { touchHistory: { touchBank: [] }, nativeEvent: {} };
+  await act(async () => {
+    cornerGrip.props.onResponderGrant(mockEvent);
+    cornerGrip.props.onResponderRelease(mockEvent);
+  });
+
+  expect(NativeModules.PopoverModule.setContentSize).toHaveBeenCalled();
+});
+
 

@@ -9,7 +9,7 @@ class SettingsWindowModule: NSObject {
 
   @objc static var shared: SettingsWindowModule?
 
-  private var window: SettingsWindow?
+  var window: SettingsWindow?
   private var closeObserver: NSObjectProtocol?
 
   override init() {
