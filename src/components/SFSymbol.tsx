@@ -2,6 +2,7 @@ import React from 'react';
 import {
   requireNativeComponent,
   StyleProp,
+  UIManager,
   ViewStyle,
 } from 'react-native';
 
@@ -21,7 +22,17 @@ interface NativeSFSymbolProps {
   style?: StyleProp<ViewStyle>;
 }
 
-const NativeSFSymbol = requireNativeComponent<NativeSFSymbolProps>('SFSymbolManager');
+// In React Native, ViewManagers named `XxxManager` (such as `SFSymbolManager`)
+// are registered in UIManager under `Xxx` (stripping the 'Manager' suffix).
+// We resolve 'SFSymbol' or fall back to 'SFSymbolManager' if ever needed.
+const nativeComponentName =
+  UIManager.getViewManagerConfig?.('SFSymbol') != null
+    ? 'SFSymbol'
+    : UIManager.getViewManagerConfig?.('SFSymbolManager') != null
+    ? 'SFSymbolManager'
+    : 'SFSymbol';
+
+const NativeSFSymbol = requireNativeComponent<NativeSFSymbolProps>(nativeComponentName);
 
 export const SFSymbol: React.FC<SFSymbolProps> = ({
   name,
