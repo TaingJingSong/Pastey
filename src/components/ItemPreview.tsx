@@ -1,3 +1,4 @@
+/* eslint-disable react-native/no-inline-styles */
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Image,
@@ -51,8 +52,8 @@ function IconButton({ icon, onPress, isPinned, copied, testID }: IconButtonProps
   const { colors } = useTheme();
 
   const glyph =
-    icon === 'pin' ? (isPinned ? '★' : '☆') :
-    icon === 'copy' ? (copied ? '✓' : '⧉') :
+    icon === 'pin' ? (isPinned ? 'Pinned' : 'Pin') :
+    icon === 'copy' ? (copied ? 'Copied' : 'Copy') :
     '✕';
 
   const color =
@@ -324,13 +325,15 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   iconButton: {
-    width: 26,
     height: 26,
     alignItems: 'center',
     justifyContent: 'center',
+    cursor: 'pointer',
+    paddingHorizontal: 6,
   },
   iconGlyph: {
-    fontSize: 14,
+    fontSize: 10,
+    fontWeight: '400',
   },
   body: {
     flex: 1,
