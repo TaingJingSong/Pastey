@@ -68,6 +68,7 @@ export function SearchBar({
   onArrowDown,
   onArrowUp,
   onSubmit,
+  onClearHistory,
   onOpenSettings,
 }: Props) {
   const { colors } = useTheme();
@@ -171,6 +172,29 @@ export function SearchBar({
       </View>
 
       <View style={styles.actionRow}>
+        {onClearHistory && (
+          <ActionIconButton
+            testID="clear-history-button"
+            icon={
+              <SFSymbol
+                name="trash"
+                size={14}
+                weight={4}
+                color={colors.textSecondary}
+              />
+            }
+            hoveredIcon={
+              <SFSymbol
+                name="trash"
+                size={14}
+                weight={4}
+                color={colors.text}
+              />
+            }
+            tooltip="Clear All History"
+            onPress={onClearHistory}
+          />
+        )}
         {onOpenSettings && (
           <ActionIconButton
             testID="quick-settings-button"
@@ -247,6 +271,7 @@ const styles = StyleSheet.create({
   actionRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 4,
   },
   actionBtn: {
     width: 26,

@@ -287,4 +287,48 @@ it('triggers onPreviewHoverStart immediately when mouse enters', () => {
   expect(onPreviewHoverStartMock).toHaveBeenCalledTimes(1);
 });
 
+it('shows copy datetime when hovered or selected, and hides when unhovered', () => {
+  const tree = renderer.create(
+    <HistoryItem
+      item={mockItem}
+      selected={false}
+      onCopy={jest.fn()}
+      onDelete={jest.fn()}
+      onTogglePin={jest.fn()}
+    />
+  );
+
+  const row = tree.root.findByProps({ testID: 'history-item-1' });
+
+  // Initially unhovered and not selected: no time text rendered
+  expect(tree.root.findAllByProps({ testID: 'history-item-time-1' }).length).toBe(0);
+
+  // Hover in: time text should appear
+  act(() => {
+    row.props.onHoverIn();
+  });
+  const timeTextHovered = tree.root.findByProps({ testID: 'history-item-time-1' });
+  expect(timeTextHovered).toBeDefined();
+
+  // Hover out: time text hidden again
+  act(() => {
+    row.props.onHoverOut();
+  });
+  expect(tree.root.findAllByProps({ testID: 'history-item-time-1' }).length).toBe(0);
+
+  // Update to selected: time text should appear
+  tree.update(
+    <HistoryItem
+      item={mockItem}
+      selected={true}
+      onCopy={jest.fn()}
+      onDelete={jest.fn()}
+      onTogglePin={jest.fn()}
+    />
+  );
+  const timeTextSelected = tree.root.findByProps({ testID: 'history-item-time-1' });
+  expect(timeTextSelected).toBeDefined();
+});
+
+
 

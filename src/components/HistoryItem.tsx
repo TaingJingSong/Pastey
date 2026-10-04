@@ -19,6 +19,33 @@ interface Props {
   onPreviewHoverStart?: () => void;
 }
 
+export function formatCopyTime(timestamp: number, now = Date.now()): string {
+  if (!timestamp || isNaN(timestamp)) {
+    return '';
+  }
+  const diff = Math.max(0, now - timestamp);
+  if (diff < 60 * 1000) {
+    return 'just now';
+  }
+  if (diff < 60 * 60 * 1000) {
+    return `${Math.floor(diff / 60000)}m ago`;
+  }
+  if (diff < 24 * 60 * 60 * 1000) {
+    return `${Math.floor(diff / 3600000)}h ago`;
+  }
+  const date = new Date(timestamp);
+  const yesterday = new Date(now);
+  yesterday.setDate(yesterday.getDate() - 1);
+  if (
+    date.getDate() === yesterday.getDate() &&
+    date.getMonth() === yesterday.getMonth() &&
+    date.getFullYear() === yesterday.getFullYear()
+  ) {
+    return 'Yesterday';
+  }
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
 export function HistoryItem({
   item,
   selected = false,
@@ -67,6 +94,8 @@ export function HistoryItem({
   };
 
   const showActions = isPinned || isHovered || selected || isCurrentPreviewItem;
+  const formattedTime = formatCopyTime(item.createdAt);
+  const fullDateTime = item.createdAt ? new Date(item.createdAt).toLocaleString() : '';
 
   return (
     <Pressable
@@ -103,6 +132,21 @@ export function HistoryItem({
         </Text>
       </View>
       <View style={styles.actionContainer}>
+        {(isHovered || selected) && formattedTime ? (
+          <Text
+            numberOfLines={1}
+            testID={`history-item-time-${item.id}`}
+            accessibilityLabel={`Copied ${formattedTime}`}
+            {...({ tooltip: fullDateTime } as any)}
+            style={[
+              styles.timeText,
+              { color: selected ? colors.selectedText : colors.textTertiary },
+              selected && styles.timeTextSelected,
+            ]}
+          >
+            {formattedTime}
+          </Text>
+        ) : null}
         {onPreview && (
           <Pressable
             testID={`preview-button-${item.id}`}
@@ -211,5 +255,15 @@ const styles = StyleSheet.create({
   },
   actionBtnHidden: {
     opacity: 0,
+  },
+  timeText: {
+    fontSize: 11,
+    lineHeight: 14,
+    marginRight: 6,
+    flexShrink: 0,
+    fontWeight: '400',
+  },
+  timeTextSelected: {
+    opacity: 0.9,
   },
 });
