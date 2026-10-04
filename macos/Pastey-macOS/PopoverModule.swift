@@ -24,6 +24,7 @@ class PopoverModule: RCTEventEmitter {
   private var lastCloseTime: TimeInterval = 0
   private var hasListeners = false
   private var previewPanel: NSPanel?
+  private var currentPreviewHeight: CGFloat = 520
   private var mousePanel: HistoryPanel?
   private var mouseVisualEffect: NSVisualEffectView?
   private var windowResizeObserver: NSObjectProtocol?
@@ -584,7 +585,7 @@ class PopoverModule: RCTEventEmitter {
       let screen = window.screen ?? NSScreen.main ?? NSScreen.screens[0]
       let visibleFrame = screen.visibleFrame
       let previewWidth: CGFloat = 380
-      let previewHeight: CGFloat = min(520, popFrame.height)
+      let previewHeight: CGFloat = min(self.currentPreviewHeight, popFrame.height)
       let spacing: CGFloat = 8
 
       // Default to right side of the popover
@@ -610,7 +611,32 @@ class PopoverModule: RCTEventEmitter {
       if panel.parent == nil {
         window.addChildWindow(panel, ordered: .above)
       }
+      panel.alphaValue = 0
       panel.orderFront(nil)
+      NSAnimationContext.runAnimationGroup { ctx in
+        ctx.duration = 0.12
+        ctx.timingFunction = CAMediaTimingFunction(name: .easeOut)
+        panel.animator().alphaValue = 1
+      }
+      resolve(true)
+    }
+  }
+
+  @objc func setPreviewHeight(
+    _ height: NSNumber,
+    resolve: @escaping RCTPromiseResolveBlock,
+    rejecter reject: @escaping RCTPromiseRejectBlock
+  ) {
+    DispatchQueue.main.async {
+      let clampedH = max(200, min(560, height.doubleValue))
+      self.currentPreviewHeight = CGFloat(clampedH)
+
+      if let panel = self.previewPanel, panel.isVisible {
+        let currentFrame = panel.frame
+        let newOriginY = currentFrame.maxY - CGFloat(clampedH)
+        let newFrame = NSRect(x: currentFrame.origin.x, y: newOriginY, width: currentFrame.width, height: CGFloat(clampedH))
+        panel.setFrame(newFrame, display: true, animate: false)
+      }
       resolve(true)
     }
   }
@@ -636,11 +662,15 @@ class PopoverModule: RCTEventEmitter {
   private func makePreviewPanel() -> NSPanel? {
     guard let appDelegate = NSApp.delegate as? AppDelegate else { return nil }
 
-    let content = appDelegate.rootView(
+    guard let content = appDelegate.rootView(
       forModuleName: "PasteyPreview",
-      initialProps: [:]
-    )
-    guard let content = content else { return nil }
+      initialProps: [String: Any]()
+    ) else { return nil }
+
+    content.wantsLayer = true
+    content.layer?.backgroundColor = NSColor.clear.cgColor
+    content.frame = NSRect(origin: .zero, size: NSSize(width: 380, height: 520))
+    content.autoresizingMask = [.width, .height]
 
     let size = NSSize(width: 380, height: 520)
     content.frame = NSRect(origin: .zero, size: size)
@@ -658,9 +688,26 @@ class PopoverModule: RCTEventEmitter {
     panel.isFloatingPanel = true
     panel.becomesKeyOnlyIfNeeded = true
     panel.level = .floating
+    panel.isOpaque = false
+    panel.backgroundColor = .clear
+    panel.hasShadow = true
+    panel.standardWindowButton(.closeButton)?.isHidden = true
+    panel.standardWindowButton(.miniaturizeButton)?.isHidden = true
+    panel.standardWindowButton(.zoomButton)?.isHidden = true
+
+    let effect = NSVisualEffectView(frame: content.bounds)
+    effect.material = .popover
+    effect.blendingMode = .behindWindow
+    effect.state = .active
+    effect.autoresizingMask = [.width, .height]
+    effect.wantsLayer = true
+    effect.layer?.cornerRadius = 10
+    effect.layer?.masksToBounds = true
+    effect.layer?.cornerCurve = .continuous
+    content.addSubview(effect, positioned: .below, relativeTo: nil)
+
     panel.contentView = content
     panel.isReleasedWhenClosed = false
-    panel.hasShadow = true
 
     return panel
   }

@@ -5,6 +5,7 @@ import { Popover } from '../native/PopoverModule';
 export interface PreviewState {
   item: ClipItem | null;
   fullContent: string | null;
+  height: number;
   isOpen: boolean;
   isPersistent: boolean;
   isPreviewHovered: boolean;
@@ -15,6 +16,23 @@ export interface PreviewState {
   cancelCloseHoverTimer: (itemId?: number) => void;
   togglePreview: (item: ClipItem) => Promise<void>;
 }
+
+export const measureHeight = (
+  item: ClipItem | null,
+  fullContent: string | null,
+  lines: number = 0
+): number => {
+  if (!item) return 260;
+  if (item.type === 'image') return 360;
+
+  const text = fullContent ?? item.preview;
+  const charPerLine = 42;
+  const wrapped = Math.ceil(text.length / charPerLine);
+  const bodyLines = Math.min(wrapped, lines === 0 ? 100 : 20);
+  const bodyHeight = bodyLines * 20;
+  const chrome = 120; // header + footer + padding
+  return Math.max(200, Math.min(560, chrome + bodyHeight));
+};
 
 let hoverCloseTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -28,6 +46,7 @@ function clearCloseTimer() {
 export const usePreviewStore = create<PreviewState>((set, get) => ({
   item: null,
   fullContent: null,
+  height: 260,
   isOpen: false,
   isPersistent: false,
   isPreviewHovered: false,
@@ -38,12 +57,17 @@ export const usePreviewStore = create<PreviewState>((set, get) => ({
       return;
     }
 
-    set({ item, fullContent: item.preview, isOpen: true, isPersistent });
+    const initialHeight = measureHeight(item, item.preview, 0);
+    set({ item, fullContent: item.preview, height: initialHeight, isOpen: true, isPersistent });
+    await Popover.setPreviewHeight(initialHeight);
     await Popover.showPreview();
     if (item.type === 'text') {
       const full = await getContent(item.id);
       if (get().item?.id === item.id) {
-        set({ fullContent: full ?? item.preview });
+        const fullText = full ?? item.preview;
+        const updatedHeight = measureHeight(item, fullText, 0);
+        set({ fullContent: fullText, height: updatedHeight });
+        await Popover.setPreviewHeight(updatedHeight);
       }
     }
   },
@@ -53,6 +77,7 @@ export const usePreviewStore = create<PreviewState>((set, get) => ({
     set({
       item: null,
       fullContent: null,
+      height: 260,
       isOpen: false,
       isPersistent: false,
       isPreviewHovered: false,

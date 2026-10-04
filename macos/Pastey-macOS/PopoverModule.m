@@ -24,6 +24,10 @@ RCT_EXTERN_METHOD(setContentSize:(nonnull NSNumber *)width
 RCT_EXTERN_METHOD(showPreview:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
+RCT_EXTERN_METHOD(setPreviewHeight:(nonnull NSNumber *)height
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
 RCT_EXTERN_METHOD(hidePreview:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 

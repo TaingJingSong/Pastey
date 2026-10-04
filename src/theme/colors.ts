@@ -36,6 +36,10 @@ export interface ThemeColors {
   overlayBg: string;
   badgeBg: string;
   badgeText: string;
+  popoverBackground: string;
+  imageBackdrop: string;
+  textSecondary: string;
+  textTertiary: string;
 }
 
 export const lightColors: ThemeColors = {
@@ -73,6 +77,10 @@ export const lightColors: ThemeColors = {
   overlayBg: 'rgba(0, 0, 0, 0.40)',
   badgeBg: 'rgba(0, 0, 0, 0.06)',
   badgeText: '#636366',
+  popoverBackground: '#ffffff',
+  imageBackdrop: 'rgba(0, 0, 0, 0.04)',
+  textSecondary: '#8e8e93',
+  textTertiary: '#aeaeb2',
 };
 
 export const darkColors: ThemeColors = {
@@ -110,4 +118,8 @@ export const darkColors: ThemeColors = {
   overlayBg: 'rgba(0, 0, 0, 0.65)',
   badgeBg: 'rgba(255, 255, 255, 0.10)',
   badgeText: '#aeaeb2',
+  popoverBackground: '#262628',
+  imageBackdrop: 'rgba(255, 255, 255, 0.06)',
+  textSecondary: '#98989d',
+  textTertiary: '#636366',
 };

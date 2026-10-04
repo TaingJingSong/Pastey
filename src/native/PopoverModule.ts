@@ -40,6 +40,12 @@ export const Popover = {
     }
     return native.setContentSize(width, height);
   },
+  setPreviewHeight(height: number): Promise<boolean> {
+    if (!native?.setPreviewHeight) {
+      return Promise.resolve(false);
+    }
+    return native.setPreviewHeight(height);
+  },
   showPreview(): Promise<boolean> {
     if (!native?.showPreview) {
       return Promise.resolve(false);
