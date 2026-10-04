@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { ClipItem, getContent } from '../db/queries';
 import { useTheme } from '../theme';
+import { SFSymbol } from './SFSymbol';
 
 interface Props {
   item: ClipItem | null;
@@ -51,10 +52,10 @@ interface IconButtonProps {
 function IconButton({ icon, onPress, isPinned, copied, testID }: IconButtonProps) {
   const { colors } = useTheme();
 
-  const glyph =
-    icon === 'pin' ? (isPinned ? 'Pinned' : 'Pin') :
-    icon === 'copy' ? (copied ? 'Copied' : 'Copy') :
-    '✕';
+  const symbolName =
+    icon === 'pin' ? (isPinned ? 'star.fill' : 'star') :
+    icon === 'copy' ? (copied ? 'checkmark' : 'doc.on.doc') :
+    'xmark';
 
   const color =
     icon === 'pin' && isPinned ? colors.pin :
@@ -76,7 +77,12 @@ function IconButton({ icon, onPress, isPinned, copied, testID }: IconButtonProps
         'Close preview'
       }
     >
-      <Text style={[styles.iconGlyph, { color }]}>{glyph}</Text>
+      <SFSymbol
+        name={symbolName}
+        size={13}
+        weight={5}
+        color={color}
+      />
     </Pressable>
   );
 }
@@ -194,12 +200,17 @@ export function ItemPreview({
         ]}
       >
         <View style={styles.headerLeft}>
+          <SFSymbol
+            name={isImage ? 'photo' : 'text.alignleft'}
+            size={13}
+            weight={5}
+            color={colors.textSecondary}
+          />
           <Text style={[styles.typeLabel, { color: colors.textSecondary }]}>
             {isImage ? 'Image' : 'Text'}
           </Text>
           <Text style={[styles.timestamp, { color: colors.textTertiary }]}>
-            {formatRelativeTime(item.createdAt)}
-            {!isImage && linesCount > 0 ? ` · ${linesCount} lines` : ''}
+            {`${formatRelativeTime(item.createdAt)}${!isImage && linesCount > 0 ? ` · ${linesCount} lines` : ''}`}
           </Text>
         </View>
 
@@ -325,15 +336,10 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   iconButton: {
-    height: 26,
+    width: 24,
+    height: 24,
     alignItems: 'center',
     justifyContent: 'center',
-    cursor: 'pointer',
-    paddingHorizontal: 6,
-  },
-  iconGlyph: {
-    fontSize: 10,
-    fontWeight: '400',
   },
   body: {
     flex: 1,

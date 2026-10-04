@@ -337,7 +337,7 @@ function SettingsApp(): React.JSX.Element {
           disabled={!ready}
         >
           <Text style={[styles.resetSizeText, { color: colors.text }]}>
-            Reset Size (420 × 520)
+            Reset Size (420 x 520)
           </Text>
         </Pressable>
       </View>

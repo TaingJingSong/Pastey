@@ -174,9 +174,9 @@ it('triggers onPreview callback when preview button is clicked', () => {
 
   expect(onPreviewMock).toHaveBeenCalledTimes(1);
 
-  // Check glyph text is >
-  const glyph = previewBtn.findByType(Text);
-  expect(glyph.props.children).toBe('>');
+  // Check SFSymbol is chevron.right
+  const symbol = previewBtn.findByProps({ name: 'chevron.right' });
+  expect(symbol).toBeDefined();
 });
 
 it('triggers onPreviewHover when hovered for 2 seconds', () => {

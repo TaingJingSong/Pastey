@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { ClipItem } from '../db/queries';
 import { useTheme } from '../theme';
+import { SFSymbol } from './SFSymbol';
 
 interface Props {
   item: ClipItem;
@@ -116,15 +117,18 @@ export function HistoryItem({
             pointerEvents={isHovered || selected || isCurrentPreviewItem ? 'auto' : 'none'}
             accessibilityLabel="Preview full content"
           >
-            <Text
-              style={[
-                styles.actionGlyph,
-                { color: isCurrentPreviewItem ? colors.accent : colors.secondaryText },
-                selected && { color: isCurrentPreviewItem ? colors.accentText : colors.selectedText },
-              ]}
-            >
-              &gt;
-            </Text>
+            <SFSymbol
+              name="chevron.right"
+              size={12}
+              weight={4}
+              color={
+                isCurrentPreviewItem
+                  ? colors.accent
+                  : selected
+                  ? colors.selectedText
+                  : colors.secondaryText
+              }
+            />
           </Pressable>
         )}
         <Pressable
@@ -138,15 +142,20 @@ export function HistoryItem({
           pointerEvents={showActions ? 'auto' : 'none'}
           accessibilityLabel={isPinned ? 'Unpin' : 'Pin'}
         >
-          <Text
-            style={[
-              styles.pinGlyph,
-              { color: isPinned ? colors.pin : colors.secondaryText },
-              selected && [styles.pinGlyphSelected, { color: colors.pinSelected }],
-            ]}
-          >
-            {isPinned ? '★' : '☆'}
-          </Text>
+          <SFSymbol
+            name={isPinned ? 'star.fill' : 'star'}
+            size={12}
+            weight={4}
+            color={
+              isPinned
+                ? selected
+                  ? colors.pinSelected
+                  : colors.pin
+                : selected
+                ? colors.selectedText
+                : colors.secondaryText
+            }
+          />
         </Pressable>
       </View>
     </Pressable>
@@ -190,24 +199,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginLeft: 6,
-    height: 18,
   },
   actionBtn: {
-    width: 20,
-    height: 18,
+    width: 26,
+    height: 26,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  actionGlyph: {
-    fontSize: 13,
-    lineHeight: 15,
-    fontWeight: '700',
-  },
-  pinGlyph: {
-    fontSize: 13,
-    lineHeight: 15,
-  },
-  pinGlyphSelected: {},
   actionBtnVisible: {
     opacity: 1,
   },

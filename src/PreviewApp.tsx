@@ -28,7 +28,7 @@ function computePreviewHeight(
 }
 
 export function PreviewApp(): React.JSX.Element {
-  const { item, fullContent,  closePreview, setPreviewHovered } = usePreviewStore();
+  const { item, fullContent, closePreview, setPreviewHovered, height } = usePreviewStore();
   const { copy, toggle } = useHistoryStore();
 
   const itemId = item?.id;
@@ -57,7 +57,10 @@ export function PreviewApp(): React.JSX.Element {
   return (
     <View
       testID="pastey-preview-root"
-      style={[styles.container]}
+      style={[
+        styles.container,
+        height !== undefined ? { height } : null,
+      ]}
       {...macOSViewProps}
     >
       <ItemPreview
@@ -79,6 +82,7 @@ const styles = StyleSheet.create({
   container: {
     width: 380,
     height: 520,
+    backgroundColor: 'transparent',
     overflow: 'hidden',
   },
 });

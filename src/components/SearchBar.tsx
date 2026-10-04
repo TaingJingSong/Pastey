@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { useTheme } from '../theme';
+import { SFSymbol } from './SFSymbol';
 
 interface Props {
   onSearch: (q: string) => void;
@@ -14,52 +15,6 @@ interface Props {
   onOpenSettings?: () => void;
   previewLines?: number;
   onTogglePreviewLines?: () => void;
-}
-
-function SearchIcon({ color }: { color: string }) {
-  return (
-    <View style={styles.searchIconWrap} pointerEvents="none">
-      <View style={[styles.searchIconCircle, { borderColor: color }]} />
-      <View style={[styles.searchIconHandle, { backgroundColor: color }]} />
-    </View>
-  );
-}
-
-function SettingsIcon({ color, size = 15 }: { color: string; size?: number }) {
-  const TEETH = [0, 45, 90, 135, 180, 225, 270, 315];
-  const toothWidth = 2;
-  const toothHeight = 2.4;
-  const ringSize = 9.5;
-
-  return (
-    <View style={[styles.settingsWrap, { width: size, height: size }]} pointerEvents="none">
-      {TEETH.map(deg => (
-        <View
-          key={deg}
-          style={[
-            styles.settingsTooth,
-            {
-              width: toothWidth,
-              height: toothHeight,
-              backgroundColor: color,
-              transform: [{ rotate: `${deg}deg` }, { translateY: -5.4 }],
-            },
-          ]}
-        />
-      ))}
-      <View
-        style={[
-          styles.settingsRing,
-          {
-            width: ringSize,
-            height: ringSize,
-            borderRadius: ringSize / 2,
-            borderColor: color,
-          },
-        ]}
-      />
-    </View>
-  );
 }
 
 function ActionIconButton({
@@ -100,20 +55,7 @@ function ActionIconButton({
         pressed && styles.actionBtnPressed,
       ]}
     >
-      {hovered && hoveredIcon ? (
-        hoveredIcon
-      ) : typeof icon === 'string' ? (
-        <Text
-          style={[
-            styles.actionBtnIcon,
-            { color: active ? colors.text : colors.iconBtnText },
-          ]}
-        >
-          {icon}
-        </Text>
-      ) : (
-        icon
-      )}
+      {hovered && hoveredIcon ? hoveredIcon : icon}
     </Pressable>
   );
 }
@@ -178,7 +120,13 @@ export function SearchBar({
               ],
         ]}
       >
-        <SearchIcon color={colors.placeholderText} />
+        <SFSymbol
+          name="magnifyingglass"
+          size={14}
+          weight={4}
+          color={colors.textSecondary}
+          style={styles.searchIcon}
+        />
         <TextInput
           ref={resolvedRef}
           testID="search-input"
@@ -205,14 +153,19 @@ export function SearchBar({
             testID="clear-search-button"
             onPress={handleClearText}
             hitSlop={6}
+            accessibilityLabel="Clear search"
+            accessibilityRole="button"
             style={({ pressed }) => [
               styles.clearSearchBtn,
               pressed && { opacity: 0.6 },
             ]}
           >
-            <Text style={[styles.clearSearchGlyph, { color: colors.secondaryText }]}>
-              ×
-            </Text>
+            <SFSymbol
+              name="xmark.circle.fill"
+              size={13}
+              weight={4}
+              color={colors.textTertiary}
+            />
           </Pressable>
         )}
       </View>
@@ -221,8 +174,22 @@ export function SearchBar({
         {onOpenSettings && (
           <ActionIconButton
             testID="quick-settings-button"
-            icon={<SettingsIcon color={colors.iconBtnText} />}
-            hoveredIcon={<SettingsIcon color={colors.text} />}
+            icon={
+              <SFSymbol
+                name="gearshape"
+                size={14}
+                weight={4}
+                color={colors.textSecondary}
+              />
+            }
+            hoveredIcon={
+              <SFSymbol
+                name="gearshape"
+                size={14}
+                weight={4}
+                color={colors.text}
+              />
+            }
             tooltip="Preferences"
             onPress={onOpenSettings}
           />
@@ -260,30 +227,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
   },
-  searchIconWrap: {
-    width: 13,
-    height: 13,
+  searchIcon: {
     marginRight: 6,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  searchIconCircle: {
-    width: 8.5,
-    height: 8.5,
-    borderRadius: 4.25,
-    borderWidth: 1.3,
-    position: 'absolute',
-    top: 0.5,
-    left: 0.5,
-  },
-  searchIconHandle: {
-    width: 1.3,
-    height: 4,
-    borderRadius: 0.6,
-    position: 'absolute',
-    bottom: 0.5,
-    right: 0.5,
-    transform: [{ rotate: '-45deg' }],
   },
   input: {
     flex: 1,
@@ -299,11 +244,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginLeft: 4,
   },
-  clearSearchGlyph: {
-    fontSize: 13,
-    lineHeight: 14,
-    fontWeight: '400',
-  },
   actionRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -317,20 +257,5 @@ const styles = StyleSheet.create({
   },
   actionBtnPressed: {
     opacity: 0.65,
-  },
-  actionBtnIcon: {
-    fontSize: 13,
-  },
-  settingsWrap: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  settingsTooth: {
-    position: 'absolute',
-    borderRadius: 0.6,
-  },
-  settingsRing: {
-    position: 'absolute',
-    borderWidth: 1.6,
   },
 });

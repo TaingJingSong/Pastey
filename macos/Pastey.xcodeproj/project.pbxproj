@@ -31,6 +31,9 @@
 		5A11C0DE0002000000000002 /* SettingsModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 5A11C0DE0001000000000002 /* SettingsModule.m */; };
 		5A11C0DE0002000000000003 /* SettingsWindowModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A11C0DE0001000000000003 /* SettingsWindowModule.swift */; };
 		5A11C0DE0002000000000004 /* SettingsWindowModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 5A11C0DE0001000000000004 /* SettingsWindowModule.m */; };
+		5A11C0DF0002000000000001 /* SFSymbolView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A11C0DF0001000000000001 /* SFSymbolView.swift */; };
+		5A11C0DF0002000000000002 /* SFSymbolManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A11C0DF0001000000000002 /* SFSymbolManager.swift */; };
+		5A11C0DF0002000000000003 /* SFSymbolManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 5A11C0DF0001000000000003 /* SFSymbolManager.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -62,6 +65,9 @@
 		5A11C0DE0001000000000002 /* SettingsModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SettingsModule.m; sourceTree = "<group>"; };
 		5A11C0DE0001000000000003 /* SettingsWindowModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindowModule.swift; sourceTree = "<group>"; };
 		5A11C0DE0001000000000004 /* SettingsWindowModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SettingsWindowModule.m; sourceTree = "<group>"; };
+		5A11C0DF0001000000000001 /* SFSymbolView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeModules/SFSymbolView.swift; sourceTree = "<group>"; };
+		5A11C0DF0001000000000002 /* SFSymbolManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeModules/SFSymbolManager.swift; sourceTree = "<group>"; };
+		5A11C0DF0001000000000003 /* SFSymbolManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NativeModules/SFSymbolManager.m; sourceTree = "<group>"; };
 		59E14CBFF628E09B42D885AA /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		6C826AF4A1B6BE3295B78554 /* Pods-Pastey-macOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Pastey-macOS.debug.xcconfig"; path = "Target Support Files/Pods-Pastey-macOS/Pods-Pastey-macOS.debug.xcconfig"; sourceTree = "<group>"; };
 		EA4C605595D9306B025162B4 /* libPods-Pastey-macOS.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Pastey-macOS.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -125,6 +131,9 @@
 				514201572437B4B40078DB4F /* main.m */,
 				514201592437B4B40078DB4F /* Pastey.entitlements */,
 				52E2353D306CC69E0025259A /* Pastey-macOS-Bridging-Header.h */,
+				5A11C0DF0001000000000001 /* SFSymbolView.swift */,
+				5A11C0DF0001000000000002 /* SFSymbolManager.swift */,
+				5A11C0DF0001000000000003 /* SFSymbolManager.m */,
 			);
 			path = "Pastey-macOS";
 			sourceTree = "<group>";
@@ -381,6 +390,9 @@
 				5A11C0DE0002000000000002 /* SettingsModule.m in Sources */,
 				5A11C0DE0002000000000003 /* SettingsWindowModule.swift in Sources */,
 				5A11C0DE0002000000000004 /* SettingsWindowModule.m in Sources */,
+				5A11C0DF0002000000000001 /* SFSymbolView.swift in Sources */,
+				5A11C0DF0002000000000002 /* SFSymbolManager.swift in Sources */,
+				5A11C0DF0002000000000003 /* SFSymbolManager.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
