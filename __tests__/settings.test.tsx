@@ -66,6 +66,8 @@ beforeEach(() => {
         shortcutKey: 9,
         shortcutModifiers: 0x0100 + 0x0200,
         shortcutLabel: '⌘⇧V',
+        captureImages: true,
+        maxImageMb: 10,
         excludedApps: [
           'com.1password.1password',
           'com.agilebits.onepassword',
@@ -335,3 +337,91 @@ it('pruneOldItems takes its limits from the settings store, not constants', asyn
   expect(cutoff).toBeGreaterThanOrEqual(before - 99 * DAY_MS);
   expect(cutoff).toBeLessThanOrEqual(after - 99 * DAY_MS);
 });
+
+it('navigates between sidebar sections', async () => {
+  const tree = await mount();
+
+  const appearanceItem = tree.root.findByProps({ testID: 'sidebar-item-appearance' });
+  await act(async () => {
+    appearanceItem.props.onPress();
+    await new Promise(resolve => setTimeout(resolve, 50));
+  });
+
+  const historyItem = tree.root.findByProps({ testID: 'sidebar-item-history' });
+  await act(async () => {
+    historyItem.props.onPress();
+    await new Promise(resolve => setTimeout(resolve, 50));
+  });
+
+  expect(tree.root.findByProps({ testID: 'history-section' })).toBeTruthy();
+});
+
+it('updates auto-expire days setting and persists to native settings module', async () => {
+  const tree = await mount();
+  const autoExpire = tree.root.findByProps({ testID: 'max-age-days-input' });
+
+  await act(async () => {
+    autoExpire.props.onChange(60);
+    await new Promise(resolve => setTimeout(resolve, 50));
+  });
+
+  expect(settings.set).toHaveBeenCalledWith('maxAgeDays', 60);
+  expect(useSettingsStore.getState().values.maxAgeDays).toBe(60);
+});
+
+it('toggles capture images setting and persists to native settings module', async () => {
+  const tree = await mount();
+  const captureSwitch = tree.root.findByProps({ testID: 'capture-images-switch' });
+
+  await act(async () => {
+    captureSwitch.props.onValueChange(false);
+    await new Promise(resolve => setTimeout(resolve, 50));
+  });
+
+  expect(settings.set).toHaveBeenCalledWith('captureImages', false);
+  expect(useSettingsStore.getState().values.captureImages).toBe(false);
+});
+
+it('updates max image mb setting and persists to native settings module', async () => {
+  const tree = await mount();
+  const maxImageMb = tree.root.findByProps({ testID: 'max-image-mb-input' });
+
+  await act(async () => {
+    maxImageMb.props.onChange(25);
+    await new Promise(resolve => setTimeout(resolve, 50));
+  });
+
+  expect(settings.set).toHaveBeenCalledWith('maxImageMb', 25);
+  expect(useSettingsStore.getState().values.maxImageMb).toBe(25);
+});
+
+it('clears unpinned history when clear history button is pressed', async () => {
+  const tree = await mount();
+  const clearBtn = tree.root.findByProps({ testID: 'clear-history-button' });
+
+  await act(async () => {
+    clearBtn.props.onPress();
+    await new Promise(resolve => setTimeout(resolve, 50));
+  });
+
+  expect(sql.execute).toHaveBeenCalledWith(
+    expect.stringContaining('DELETE FROM items WHERE pinned = 0'),
+    expect.anything()
+  );
+});
+
+it('resets all settings to defaults when reset all settings button is pressed', async () => {
+  const tree = await mount();
+  const resetBtn = tree.root.findByProps({ testID: 'reset-all-settings-button' });
+
+  await act(async () => {
+    resetBtn.props.onPress();
+    await new Promise(resolve => setTimeout(resolve, 50));
+  });
+
+  expect(settings.set).toHaveBeenCalledWith('maxItems', 500);
+  expect(settings.set).toHaveBeenCalledWith('maxAgeDays', 30);
+  expect(settings.set).toHaveBeenCalledWith('theme', 'system');
+  expect(NativeModules.HotkeyModule.register).toHaveBeenCalledWith(9, 768);
+});
+

@@ -7,6 +7,7 @@ import {
   SettingsKey,
   ThemePreference,
 } from '../native/SettingsModule';
+import { Hotkey } from '../native/HotkeyModule';
 import { syncAppearance } from '../theme/useTheme';
 
 export interface SettingsState {
@@ -16,6 +17,7 @@ export interface SettingsState {
   update: <K extends SettingsKey>(key: K, value: Settings[K]) => Promise<void>;
   updateShortcut: (keyCode: number, modifiers: number, label: string) => Promise<void>;
   setSystemTheme: (systemTheme: 'light' | 'dark') => void;
+  resetAllSettings: () => Promise<void>;
 }
 
 // Module-level singleton: the settings window and the popover share this
@@ -52,17 +54,34 @@ export const useSettingsStore = create<SettingsState>(set => ({
       },
     }));
     try {
-      const { Hotkey } = require('../native/HotkeyModule');
       await Hotkey.register(keyCode, modifiers);
     } catch {
       // Hotkey registration error handling
     }
-    await writeSetting('shortcutKey', keyCode);
-    await writeSetting('shortcutModifiers', modifiers);
-    await writeSetting('shortcutLabel', label);
+    await Promise.all([
+      writeSetting('shortcutKey', keyCode),
+      writeSetting('shortcutModifiers', modifiers),
+      writeSetting('shortcutLabel', label),
+    ]);
   },
 
   setSystemTheme: (systemTheme: 'light' | 'dark') => {
     set(state => ({ values: { ...state.values, systemTheme } }));
+  },
+
+  resetAllSettings: async () => {
+    const defaults: Settings = { ...DEFAULT_SETTINGS };
+    set({ values: defaults });
+    syncAppearance(defaults.theme);
+    try {
+      await Hotkey.register(defaults.shortcutKey, defaults.shortcutModifiers);
+    } catch {
+      // Hotkey registration error handling
+    }
+    await Promise.all(
+      (Object.keys(DEFAULT_SETTINGS) as SettingsKey[]).map(key =>
+        writeSetting(key, defaults[key])
+      )
+    );
   },
 }));

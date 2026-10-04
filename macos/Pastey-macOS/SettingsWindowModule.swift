@@ -5,7 +5,8 @@ import Foundation
 class SettingsWindowModule: NSObject {
 
   private static let moduleName = "PasteySettings"
-  private static let windowSize = NSSize(width: 480, height: 460)
+  private static let windowSize = NSSize(width: 720, height: 520)
+  private static let minWindowSize = NSSize(width: 640, height: 460)
 
   @objc static var shared: SettingsWindowModule?
 
@@ -93,10 +94,11 @@ class SettingsWindowModule: NSObject {
 
     let window = SettingsWindow(
       contentRect: NSRect(origin: .zero, size: SettingsWindowModule.windowSize),
-      styleMask: [.titled, .closable, .miniaturizable],
+      styleMask: [.titled, .closable, .miniaturizable, .resizable],
       backing: .buffered,
       defer: false
     )
+    window.minSize = SettingsWindowModule.minWindowSize
     window.title = "Pastey Settings"
     window.contentView = content
     window.isReleasedWhenClosed = false

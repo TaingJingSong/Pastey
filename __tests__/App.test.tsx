@@ -35,6 +35,8 @@ beforeEach(() => {
         shortcutKey: 9,
         shortcutModifiers: 0x0100 + 0x0200,
         shortcutLabel: '⌘⇧V',
+        captureImages: true,
+        maxImageMb: 10,
         excludedApps: [],
       },
       ready: true,

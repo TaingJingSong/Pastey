@@ -142,6 +142,13 @@ class ClipboardMonitor: RCTEventEmitter {
     }
 
     if let data = pb.data(forType: .png) {
+      let captureImages = UserDefaults.standard.object(forKey: "captureImages") as? Bool ?? true
+      guard captureImages else { return nil }
+      let maxMb = UserDefaults.standard.object(forKey: "maxImageMb") as? Double ?? 10.0
+      if Double(data.count) > maxMb * 1024 * 1024 {
+        return nil
+      }
+
       let dir = imageDirectory
       try? FileManager.default.createDirectory(
         atPath: dir,

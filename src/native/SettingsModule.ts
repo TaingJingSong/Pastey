@@ -34,6 +34,8 @@ export const DEFAULT_SETTINGS = {
   shortcutKey: 9, // Key.V
   shortcutModifiers: 0x0100 + 0x0200, // Mod.cmd + Mod.shift (768)
   shortcutLabel: '⌘⇧V',
+  captureImages: true,
+  maxImageMb: 10,
   excludedApps: [
     'com.1password.1password',
     'com.agilebits.onepassword',
@@ -55,6 +57,8 @@ export type Settings = {
   shortcutKey: number;
   shortcutModifiers: number;
   shortcutLabel: string;
+  captureImages: boolean;
+  maxImageMb: number;
   excludedApps: string[];
 };
 
@@ -105,6 +109,17 @@ export async function readSetting<K extends SettingsKey>(
   if (key === 'shortcutLabel') {
     return (typeof stored === 'string' ? stored : DEFAULT_SETTINGS.shortcutLabel) as Settings[K];
   }
+  if (key === 'captureImages') {
+    return (typeof stored === 'boolean' ? stored : DEFAULT_SETTINGS.captureImages) as Settings[K];
+  }
+  if (key === 'maxImageMb') {
+    const num = Number(stored);
+    return (Number.isNaN(num) || num <= 0 ? DEFAULT_SETTINGS.maxImageMb : num) as Settings[K];
+  }
+  if (key === 'maxAgeDays') {
+    const num = Number(stored);
+    return (Number.isNaN(num) || num <= 0 ? DEFAULT_SETTINGS.maxAgeDays : num) as Settings[K];
+  }
   return stored as Settings[K];
 }
 
@@ -154,6 +169,14 @@ export async function readAllSettings(): Promise<Partial<Settings>> {
         result.shortcutModifiers = Number.isNaN(num) ? DEFAULT_SETTINGS.shortcutModifiers : num;
       } else if (key === 'shortcutLabel') {
         result.shortcutLabel = typeof value === 'string' ? value : DEFAULT_SETTINGS.shortcutLabel;
+      } else if (key === 'captureImages') {
+        result.captureImages = typeof value === 'boolean' ? value : DEFAULT_SETTINGS.captureImages;
+      } else if (key === 'maxImageMb') {
+        const num = Number(value);
+        result.maxImageMb = Number.isNaN(num) || num <= 0 ? DEFAULT_SETTINGS.maxImageMb : num;
+      } else if (key === 'maxAgeDays') {
+        const num = Number(value);
+        result.maxAgeDays = Number.isNaN(num) || num <= 0 ? DEFAULT_SETTINGS.maxAgeDays : num;
       } else {
         result[key] = value as any;
       }
