@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Pressable,
   StyleSheet,
@@ -12,6 +12,7 @@ import { Popover } from '../native/PopoverModule';
 import { HistoryPosition } from '../native/SettingsModule';
 import { SegmentedControl } from './controls/SegmentedControl';
 import { SettingRow } from './controls/SettingRow';
+import { AutoPaste } from '../native/AutoPaste';
 
 const HISTORY_POSITION_OPTIONS = [
   { id: 'menubar' as HistoryPosition, label: 'Menu bar' },
@@ -21,6 +22,10 @@ const HISTORY_POSITION_OPTIONS = [
 export function GeneralSection(): React.JSX.Element {
   const { values, ready, update } = useSettingsStore();
   const { colors } = useTheme();
+  const [trusted, setTrusted] = useState<boolean | null>(null);
+  useEffect(() => {
+    AutoPaste.isTrusted().then(setTrusted).catch(() => setTrusted(false));
+  }, []);
 
   return (
     <View testID="general-section" style={styles.container}>
@@ -74,6 +79,32 @@ export function GeneralSection(): React.JSX.Element {
           </Text>
         </Pressable>
       </SettingRow>
+      <SettingRow
+        label="Auto-paste into active app"
+        hint="After choosing an item, paste it into the app you were using. Requires Accessibility permission in System Settings."
+      >
+        <Switch
+          testID="auto-paste-switch"
+          value={values.autoPaste}
+          disabled={!ready}
+          onValueChange={async enabled => {
+            if (enabled) {
+              // Shows the system prompt the first time. Returns whether the
+              // app is trusted *right now*, which is usually false until the
+              // user returns from System Settings. We still set the flag so
+              // the next paste attempt will work if they've granted it.
+              await AutoPaste.requestPermission().catch(() => {});
+            }
+            update('autoPaste', enabled);
+          }}
+        />
+      </SettingRow>
+      {values.autoPaste && !trusted && (
+        <Text style={[styles.warning, { color: colors.textTertiary }]}>
+          Pastey doesn't have Accessibility permission yet. Open System Settings →
+          Privacy & Security → Accessibility and enable Pastey.
+        </Text>
+      )}
     </View>
   );
 }
@@ -99,6 +130,10 @@ const styles = StyleSheet.create({
   resetSizeText: {
     fontSize: 12,
     fontWeight: '500',
+  },
+  warning: {
+    fontSize: 12,
+    marginTop: 4,
   },
 });
 

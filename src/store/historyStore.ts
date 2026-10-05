@@ -14,6 +14,7 @@ import {
 import { Hotkey, Key, Mod } from '../native/HotkeyModule';
 import { initSchema } from '../db/schema';
 import { useSettingsStore } from './settingsStore';
+import { AutoPaste } from '../native/AutoPaste';
 
 export interface HistoryState {
   items: ClipItem[];
@@ -158,7 +159,25 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
       filePath: item.filePath ?? undefined,
     });
 
+    // Capture setting before hiding — after hide() the popover may unmount
+    const settings = useSettingsStore.getState().values;
+    const wantAutoPaste = settings.autoPaste === true;
+    const delayMs = settings.autoPasteDelayMs ?? 120;
+
     await Popover.hide();
+
+    if (wantAutoPaste) {
+      try {
+        const trusted = await AutoPaste.isTrusted();
+        if (trusted) {
+          await AutoPaste.paste(delayMs);
+        }
+      } catch {
+        // Permission denied or event post failed. Fail silently — the
+        // clipboard write already succeeded, so the user can still ⌘V
+        // manually. No need to alarm them.
+      }
+    }
   },
   quickPaste: async index => {
     const { items, copy } = get();

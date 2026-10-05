@@ -18,22 +18,24 @@
 		5215C3DA306D772B001D9975 /* WindowModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 5215C3D5306D772B001D9975 /* WindowModule.m */; };
 		524BF0A9306DF89F00C25727 /* HotKeyModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524BF0A8306DF89F00C25727 /* HotKeyModule.swift */; };
 		524BF0AA306DF89F00C25727 /* HotKeyModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 524BF0A7306DF89F00C25727 /* HotKeyModule.m */; };
+		524BF0AB306DF89F00C25727 /* PopoverModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524BF0AC306DF89F00C25727 /* PopoverModule.swift */; };
+		524BF0AD306DF89F00C25727 /* PopoverModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 524BF0AE306DF89F00C25727 /* PopoverModule.m */; };
 		52891D5A306CF0B900A83237 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 52891D59306CF0B900A83237 /* libsqlite3.tbd */; };
 		52891D5D306CF11200A83237 /* PasteySQLite.m in Sources */ = {isa = PBXBuildFile; fileRef = 52891D5B306CF11200A83237 /* PasteySQLite.m */; };
 		52891D5E306CF11200A83237 /* PasteySQLite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52891D5C306CF11200A83237 /* PasteySQLite.swift */; };
+		528965BF307363AB00126A8B /* AutoPasteModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 528965BD307363AB00126A8B /* AutoPasteModule.m */; };
+		528965C0307363AB00126A8B /* AutoPasteModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 528965BE307363AB00126A8B /* AutoPasteModule.swift */; };
 		52E2353B306CC6920025259A /* PasteyModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 52E23539306CC6920025259A /* PasteyModule.m */; };
 		52E2353C306CC6920025259A /* PasteyModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52E2353A306CC6920025259A /* PasteyModule.swift */; };
-		524BF0AB306DF89F00C25727 /* PopoverModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524BF0AC306DF89F00C25727 /* PopoverModule.swift */; };
-		524BF0AD306DF89F00C25727 /* PopoverModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 524BF0AE306DF89F00C25727 /* PopoverModule.m */; };
 		537BE2C8BF4D0F241234666A /* libPods-Pastey-macOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EA4C605595D9306B025162B4 /* libPods-Pastey-macOS.a */; };
-		77A031C5B7E1473497240F9E /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 59E14CBFF628E09B42D885AA /* PrivacyInfo.xcprivacy */; };
 		5A11C0DE0002000000000001 /* SettingsModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A11C0DE0001000000000001 /* SettingsModule.swift */; };
 		5A11C0DE0002000000000002 /* SettingsModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 5A11C0DE0001000000000002 /* SettingsModule.m */; };
 		5A11C0DE0002000000000003 /* SettingsWindowModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A11C0DE0001000000000003 /* SettingsWindowModule.swift */; };
 		5A11C0DE0002000000000004 /* SettingsWindowModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 5A11C0DE0001000000000004 /* SettingsWindowModule.m */; };
-		5A11C0DF0002000000000001 /* SFSymbolView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A11C0DF0001000000000001 /* SFSymbolView.swift */; };
-		5A11C0DF0002000000000002 /* SFSymbolManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A11C0DF0001000000000002 /* SFSymbolManager.swift */; };
-		5A11C0DF0002000000000003 /* SFSymbolManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 5A11C0DF0001000000000003 /* SFSymbolManager.m */; };
+		5A11C0DF0002000000000001 /* NativeModules/SFSymbolView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A11C0DF0001000000000001 /* NativeModules/SFSymbolView.swift */; };
+		5A11C0DF0002000000000002 /* NativeModules/SFSymbolManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A11C0DF0001000000000002 /* NativeModules/SFSymbolManager.swift */; };
+		5A11C0DF0002000000000003 /* NativeModules/SFSymbolManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 5A11C0DF0001000000000003 /* NativeModules/SFSymbolManager.m */; };
+		77A031C5B7E1473497240F9E /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 59E14CBFF628E09B42D885AA /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -53,22 +55,24 @@
 		5215C3D6306D772B001D9975 /* WindowModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowModule.swift; sourceTree = "<group>"; };
 		524BF0A7306DF89F00C25727 /* HotKeyModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HotKeyModule.m; sourceTree = "<group>"; };
 		524BF0A8306DF89F00C25727 /* HotKeyModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotKeyModule.swift; sourceTree = "<group>"; };
+		524BF0AC306DF89F00C25727 /* PopoverModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopoverModule.swift; sourceTree = "<group>"; };
+		524BF0AE306DF89F00C25727 /* PopoverModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PopoverModule.m; sourceTree = "<group>"; };
 		52891D59306CF0B900A83237 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk/usr/lib/libsqlite3.tbd; sourceTree = DEVELOPER_DIR; };
 		52891D5B306CF11200A83237 /* PasteySQLite.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PasteySQLite.m; sourceTree = "<group>"; };
 		52891D5C306CF11200A83237 /* PasteySQLite.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteySQLite.swift; sourceTree = "<group>"; };
+		528965BD307363AB00126A8B /* AutoPasteModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AutoPasteModule.m; sourceTree = "<group>"; };
+		528965BE307363AB00126A8B /* AutoPasteModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoPasteModule.swift; sourceTree = "<group>"; };
 		52E23539306CC6920025259A /* PasteyModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PasteyModule.m; sourceTree = "<group>"; };
 		52E2353A306CC6920025259A /* PasteyModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteyModule.swift; sourceTree = "<group>"; };
-		524BF0AC306DF89F00C25727 /* PopoverModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopoverModule.swift; sourceTree = "<group>"; };
-		524BF0AE306DF89F00C25727 /* PopoverModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PopoverModule.m; sourceTree = "<group>"; };
 		52E2353D306CC69E0025259A /* Pastey-macOS-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Pastey-macOS-Bridging-Header.h"; sourceTree = "<group>"; };
+		59E14CBFF628E09B42D885AA /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		5A11C0DE0001000000000001 /* SettingsModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsModule.swift; sourceTree = "<group>"; };
 		5A11C0DE0001000000000002 /* SettingsModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SettingsModule.m; sourceTree = "<group>"; };
 		5A11C0DE0001000000000003 /* SettingsWindowModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindowModule.swift; sourceTree = "<group>"; };
 		5A11C0DE0001000000000004 /* SettingsWindowModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SettingsWindowModule.m; sourceTree = "<group>"; };
-		5A11C0DF0001000000000001 /* SFSymbolView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeModules/SFSymbolView.swift; sourceTree = "<group>"; };
-		5A11C0DF0001000000000002 /* SFSymbolManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeModules/SFSymbolManager.swift; sourceTree = "<group>"; };
-		5A11C0DF0001000000000003 /* SFSymbolManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NativeModules/SFSymbolManager.m; sourceTree = "<group>"; };
-		59E14CBFF628E09B42D885AA /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		5A11C0DF0001000000000001 /* NativeModules/SFSymbolView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeModules/SFSymbolView.swift; sourceTree = "<group>"; };
+		5A11C0DF0001000000000002 /* NativeModules/SFSymbolManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeModules/SFSymbolManager.swift; sourceTree = "<group>"; };
+		5A11C0DF0001000000000003 /* NativeModules/SFSymbolManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NativeModules/SFSymbolManager.m; sourceTree = "<group>"; };
 		6C826AF4A1B6BE3295B78554 /* Pods-Pastey-macOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Pastey-macOS.debug.xcconfig"; path = "Target Support Files/Pods-Pastey-macOS/Pods-Pastey-macOS.debug.xcconfig"; sourceTree = "<group>"; };
 		EA4C605595D9306B025162B4 /* libPods-Pastey-macOS.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Pastey-macOS.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
@@ -107,6 +111,8 @@
 		5142014A2437B4B30078DB4F /* Pastey-macOS */ = {
 			isa = PBXGroup;
 			children = (
+				528965BD307363AB00126A8B /* AutoPasteModule.m */,
+				528965BE307363AB00126A8B /* AutoPasteModule.swift */,
 				524BF0A7306DF89F00C25727 /* HotKeyModule.m */,
 				524BF0A8306DF89F00C25727 /* HotKeyModule.swift */,
 				5215C3D3306D772B001D9975 /* ClipboardMonitor.m */,
@@ -131,9 +137,9 @@
 				514201572437B4B40078DB4F /* main.m */,
 				514201592437B4B40078DB4F /* Pastey.entitlements */,
 				52E2353D306CC69E0025259A /* Pastey-macOS-Bridging-Header.h */,
-				5A11C0DF0001000000000001 /* SFSymbolView.swift */,
-				5A11C0DF0001000000000002 /* SFSymbolManager.swift */,
-				5A11C0DF0001000000000003 /* SFSymbolManager.m */,
+				5A11C0DF0001000000000001 /* NativeModules/SFSymbolView.swift */,
+				5A11C0DF0001000000000002 /* NativeModules/SFSymbolManager.swift */,
+				5A11C0DF0001000000000003 /* NativeModules/SFSymbolManager.m */,
 			);
 			path = "Pastey-macOS";
 			sourceTree = "<group>";
@@ -378,6 +384,8 @@
 				524BF0A9306DF89F00C25727 /* HotKeyModule.swift in Sources */,
 				524BF0AA306DF89F00C25727 /* HotKeyModule.m in Sources */,
 				5215C3D9306D772B001D9975 /* ClipboardMonitor.swift in Sources */,
+				528965BF307363AB00126A8B /* AutoPasteModule.m in Sources */,
+				528965C0307363AB00126A8B /* AutoPasteModule.swift in Sources */,
 				5215C3DA306D772B001D9975 /* WindowModule.m in Sources */,
 				5142014D2437B4B30078DB4F /* AppDelegate.mm in Sources */,
 				52E2353B306CC6920025259A /* PasteyModule.m in Sources */,
@@ -390,9 +398,9 @@
 				5A11C0DE0002000000000002 /* SettingsModule.m in Sources */,
 				5A11C0DE0002000000000003 /* SettingsWindowModule.swift in Sources */,
 				5A11C0DE0002000000000004 /* SettingsWindowModule.m in Sources */,
-				5A11C0DF0002000000000001 /* SFSymbolView.swift in Sources */,
-				5A11C0DF0002000000000002 /* SFSymbolManager.swift in Sources */,
-				5A11C0DF0002000000000003 /* SFSymbolManager.m in Sources */,
+				5A11C0DF0002000000000001 /* NativeModules/SFSymbolView.swift in Sources */,
+				5A11C0DF0002000000000002 /* NativeModules/SFSymbolManager.swift in Sources */,
+				5A11C0DF0002000000000003 /* NativeModules/SFSymbolManager.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

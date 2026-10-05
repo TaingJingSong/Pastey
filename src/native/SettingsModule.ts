@@ -43,6 +43,8 @@ export const DEFAULT_SETTINGS = {
     'org.keepassxc.keepassxc',
     'com.apple.keychainaccess',
   ] as string[],
+  autoPaste: false,
+  autoPasteDelayMs: 120,
 };
 
 export type Settings = {
@@ -60,6 +62,8 @@ export type Settings = {
   captureImages: boolean;
   maxImageMb: number;
   excludedApps: string[];
+  autoPaste: boolean;
+  autoPasteDelayMs: number;
 };
 
 export type SettingsKey = keyof Settings;
@@ -177,6 +181,11 @@ export async function readAllSettings(): Promise<Partial<Settings>> {
       } else if (key === 'maxAgeDays') {
         const num = Number(value);
         result.maxAgeDays = Number.isNaN(num) || num <= 0 ? DEFAULT_SETTINGS.maxAgeDays : num;
+      } else if (key === 'autoPaste') {
+        result.autoPaste = typeof value === 'boolean' ? value : DEFAULT_SETTINGS.autoPaste;
+      } else if (key === 'autoPasteDelayMs') {
+        const num = Number(value);
+        result.autoPasteDelayMs = Number.isNaN(num) || num <= 0 ? DEFAULT_SETTINGS.autoPasteDelayMs : num;
       } else {
         result[key] = value as any;
       }
