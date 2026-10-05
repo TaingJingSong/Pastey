@@ -335,6 +335,21 @@ class PopoverModule: RCTEventEmitter {
     }
   }
 
+  private func quickPasteIndex(for keyCode: Int) -> Int? {
+    switch keyCode {
+    case 18: return 1
+    case 19: return 2
+    case 20: return 3
+    case 21: return 4
+    case 23: return 5
+    case 22: return 6
+    case 26: return 7
+    case 28: return 8
+    case 25: return 9
+    default: return nil
+    }
+  }
+
   @objc func attachKeyMonitor() {
     DispatchQueue.main.async {
       if let existing = self.keyMonitor {
@@ -346,6 +361,13 @@ class PopoverModule: RCTEventEmitter {
         guard let self = self else { return event }
         let isVisible = (self.popover?.isShown == true) || (self.mousePanel?.isVisible == true)
         guard isVisible else { return event }
+
+        // ⌘ + 1..9 → quick-paste the Nth item
+        if event.modifierFlags.contains(.command),
+          let index = self.quickPasteIndex(for: Int(event.keyCode)) {
+          self.emitEvent(name: "onKey", body: ["key": "quickPaste", "index": index])
+          return nil
+        }
 
         switch Int(event.keyCode) {
         case 125:

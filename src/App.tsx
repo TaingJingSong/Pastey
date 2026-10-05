@@ -35,6 +35,7 @@ function App(props: AppProps): React.JSX.Element {
     copy,
     moveSelection,
     confirmSelection,
+    quickPaste,
   } = useHistoryStore();
 
   const { values, ready: settingsReady, load: loadSettings, update: updateSetting } =
@@ -62,7 +63,15 @@ function App(props: AppProps): React.JSX.Element {
     init();
     Popover.attachKeyMonitor();
 
-    const keySub = Popover.onKey(({ key }) => {
+    const keySub = Popover.onKey(({ key, ...rest }) => {
+      if (key === 'quickPaste') {
+        const idx = (rest as { index: number }).index;
+        if (idx >= 1 && idx <= 9) {
+          quickPaste(idx - 1);
+        }
+        return;
+      }
+
       if (key === 'down') {
         moveSelection(1);
         if (usePreviewStore.getState().isOpen) {
@@ -128,7 +137,7 @@ function App(props: AppProps): React.JSX.Element {
       hideSub.remove();
       themeSub.remove();
     };
-  }, [init, moveSelection, confirmSelection, items]);
+  }, [init, moveSelection, confirmSelection, quickPaste, items]);
 
   const handleClearHistory = () => {
     const hasPinned = items.some(i => i.pinned === 1);

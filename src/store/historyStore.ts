@@ -31,6 +31,7 @@ export interface HistoryState {
   setSelectedIndex: (index: number) => void;
   moveSelection: (delta: number) => void;
   confirmSelection: () => Promise<void>;
+  quickPaste: (index: number) => Promise<void>;
 }
 
 let subscription: { remove: () => void } | null = null;
@@ -158,6 +159,12 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
     });
 
     await Popover.hide();
+  },
+  quickPaste: async index => {
+    const { items, copy } = get();
+    const item = items[index];
+    if (!item) {return;}
+    await copy(item.id);
   },
 }));
 

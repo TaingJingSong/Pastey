@@ -6,6 +6,7 @@ import { SFSymbol } from './SFSymbol';
 
 interface Props {
   item: ClipItem;
+  index?: number;
   selected?: boolean;
   compact?: boolean;
   previewLines?: number;
@@ -48,6 +49,7 @@ export function formatCopyTime(timestamp: number, now = Date.now()): string {
 
 export function HistoryItem({
   item,
+  index,
   selected = false,
   compact = false,
   previewLines = 1,
@@ -96,6 +98,7 @@ export function HistoryItem({
   const showActions = isPinned || isHovered || selected || isCurrentPreviewItem;
   const formattedTime = formatCopyTime(item.createdAt);
   const fullDateTime = item.createdAt ? new Date(item.createdAt).toLocaleString() : '';
+  const showBadge = typeof index === 'number' && index >= 0 && index < 9;
 
   return (
     <Pressable
@@ -117,6 +120,21 @@ export function HistoryItem({
         onMouseLeave: handleHoverOut,
       } as any)}
     >
+      {showBadge && (
+        <Text
+          numberOfLines={1}
+          testID={`history-item-shortcut-${item.id}`}
+          style={[
+            styles.shortcutBadge,
+            {
+              color: selected ? colors.selectedText : colors.textTertiary,
+              opacity: selected ? 0.85 : 0.5,
+            },
+          ]}
+        >
+          ⌘{index + 1}
+        </Text>
+      )}
       <View style={styles.body}>
         <Text
           numberOfLines={previewLines}
@@ -265,5 +283,13 @@ const styles = StyleSheet.create({
   },
   timeTextSelected: {
     opacity: 0.9,
+  },
+  shortcutBadge: {
+    fontFamily: 'Menlo',
+    fontSize: 11,
+    width: 26,
+    marginRight: 8,
+    textAlign: 'left',
+    letterSpacing: -0.3,
   },
 });

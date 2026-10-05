@@ -1,291 +1,422 @@
 <a id="readme-top"></a>
 
 <!-- PROJECT SHIELDS -->
+[![Release][release-shield]][release-url]
+[![Downloads][downloads-shield]][downloads-url]
+[![CI][ci-shield]][ci-url]
 [![macOS][platform-shield]][platform-url]
 [![React Native macOS][rn-macos-shield]][rn-macos-url]
-[![Swift][swift-shield]][swift-url]
-[![SQLite][sqlite-shield]][sqlite-url]
-[![Tests][tests-shield]][tests-url]
 [![MIT License][license-shield]][license-url]
 
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <a href="https://github.com/your-username/pastey">
+  <a href="https://github.com/TaingJingSong/pastey">
     <img src="assets/logo.png" alt="Pastey Logo" width="100" height="100">
   </a>
 
   <h1 align="center">Pastey</h1>
 
   <p align="center">
-    A lightweight, blazing-fast native clipboard manager for macOS built with React Native macOS and Swift.
-    <br />
-    <a href="docs/README.md"><strong>Explore the documentation »</strong></a>
+    A lightweight, private clipboard manager for macOS, built with React Native macOS and native Swift modules.
     <br />
     <br />
-    <a href="CHANGELOG.md">View Changelog</a>
+    <a href="https://github.com/TaingJingSong/pastey/releases/latest"><strong>Download</strong></a>
     ·
-    <a href="https://github.com/your-username/pastey/issues/new?labels=bug&template=bug_report.md">Report Bug</a>
+    <a href="CHANGELOG.md">Changelog</a>
     ·
-    <a href="https://github.com/your-username/pastey/issues/new?labels=enhancement&template=feature_request.md">Request Feature</a>
+    <a href="https://github.com/TaingJingSong/pastey/issues/new?labels=bug">Report a Bug</a>
+    ·
+    <a href="https://github.com/TaingJingSong/pastey/issues/new?labels=enhancement">Request a Feature</a>
   </p>
 </div>
+
+<!-- SCREENSHOT -->
+<div align="center">
+  <img src="assets/screenshot-history.png" alt="Pastey history panel" width="600">
+</div>
+
+---
 
 <!-- TABLE OF CONTENTS -->
 <details>
   <summary>Table of Contents</summary>
   <ol>
-    <li>
-      <a href="#about-the-project">About The Project</a>
+    <li><a href="#about">About</a>
       <ul>
-        <li><a href="#key-features">Key Features</a></li>
+        <li><a href="#features">Features</a></li>
         <li><a href="#built-with">Built With</a></li>
       </ul>
     </li>
-    <li>
-      <a href="#getting-started">Getting Started</a>
+    <li><a href="#installation">Installation</a>
       <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
+        <li><a href="#system-requirements">System Requirements</a></li>
+        <li><a href="#download">Download</a></li>
+        <li><a href="#first-launch-warning">First-launch warning</a></li>
+        <li><a href="#verifying-your-download">Verifying your download</a></li>
+        <li><a href="#uninstalling">Uninstalling</a></li>
       </ul>
     </li>
-    <li>
-      <a href="#usage">Usage</a>
+    <li><a href="#usage">Usage</a>
       <ul>
         <li><a href="#keyboard-shortcuts">Keyboard Shortcuts</a></li>
         <li><a href="#presentation-modes">Presentation Modes</a></li>
-        <li><a href="#auxiliary-preview-window">Auxiliary Preview Window</a></li>
+        <li><a href="#preview-panel">Preview Panel</a></li>
         <li><a href="#window-resizing">Window Resizing</a></li>
       </ul>
     </li>
-    <li><a href="#data-storage--privacy">Data Storage & Privacy</a></li>
+    <li><a href="#data-and-privacy">Data and Privacy</a></li>
+    <li><a href="#architecture">Architecture</a></li>
+    <li><a href="#building-from-source">Building from Source</a>
+      <ul>
+        <li><a href="#prerequisites">Prerequisites</a></li>
+        <li><a href="#setup">Setup</a></li>
+        <li><a href="#running">Running</a></li>
+        <li><a href="#tests">Tests</a></li>
+        <li><a href="#release-build">Release Build</a></li>
+      </ul>
+    </li>
+    <li><a href="#troubleshooting">Troubleshooting</a></li>
     <li><a href="#roadmap">Roadmap</a></li>
     <li><a href="#contributing">Contributing</a></li>
+    <li><a href="#security">Security</a></li>
     <li><a href="#license">License</a></li>
-    <li><a href="#contact">Contact</a></li>
     <li><a href="#acknowledgments">Acknowledgments</a></li>
   </ol>
 </details>
 
-<!-- ABOUT THE PROJECT -->
-## About The Project
+---
 
-Most macOS clipboard managers are either bulky, electron-based memory hogs or closed-source paid utilities. **Pastey** combines the best of both worlds: the development agility and sleek declarative UI of **React Native macOS** paired with **pure native AppKit/Swift modules** for system integration, memory efficiency, and snappy performance.
+<!-- ABOUT -->
+## About
 
-Pastey runs quietly in the macOS menu bar as an accessory application (`NSApplicationActivationPolicyAccessory`) without cluttering your Dock. It tracks text and image clips, features instant debounced SQLite search, offers multi-line preview modes, supports live window resizing at your mouse cursor, and strictly respects privacy by skipping sensitive password manager pasteboards.
+Pastey sits in the menu bar, watches your clipboard, and gives you back anything you've copied recently — searchable, previewable, and re-pasteable from a global hotkey.
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+Most clipboard managers on macOS are either Electron apps using 200 MB of RAM or paid closed-source utilities. Pastey is a smaller alternative: a React Native macOS UI over native Swift modules for the parts that need to feel native — the pasteboard watcher, the global hotkey, the menu bar item, and the popover.
 
-### Key Features
+It runs as an accessory application, so there's no dock icon and no Cmd-Tab entry. It also skips pasteboards marked as concealed by password managers, so 1Password and Bitwarden copies don't end up in your history.
 
-* **⚡ Zero Dock Footprint**: Runs exclusively as a menu bar accessory app.
-* **⌨️ Global Hotkey**: Summon your clipboard from anywhere via customizable shortcuts (<kbd>⌘⇧V</kbd>, <kbd>⌘⌥V</kbd>, <kbd>⌃⌥V</kbd>, <kbd>⌥Space</kbd>).
-* **📍 Dual Positioning**: Choose between attaching to the **Menu Bar** or popping up right at your **Mouse Cursor**.
-* **↔️ Live Window Resizing**: Resize the floating history panel dynamically by dragging corners or borders, with sizes persisted across restarts.
-* **🔍 Instant Substring Search**: Real-time filtering through SQLite `LIKE` queries matching both preview lines and full contents.
-* **🖼️ Rich Clips (Text & Images)**: Capture plain text clips and PNG image copies stored safely in Application Support.
-* **👁️ Auxiliary Preview Panel**: View long texts or full-resolution images side-by-side on demand with smart edge collision handling.
-* **📌 Pinning & Retention**: Keep important items pinned (`★`) at the top, immune to auto-expiration.
-* **🔒 Privacy Guard**: Ignores concealed/transient pasteboards (1Password, Bitwarden, Keychain) and custom excluded application bundle IDs.
-* **🌓 Native Appearance Sync**: System, Light, and Dark themes that sync seamlessly with native macOS `NSAppearance`.
-* **🚀 Launch at Login**: Modern `SMAppService` (macOS 13+) with legacy `LaunchAgents` fallback.
+### Features
+
+- **Menu bar only** — no dock icon, no Cmd-Tab entry
+- **Global hotkey** — ⌘⇧V by default; four presets in Preferences
+- **Two presentation modes** — attached to the menu bar, or floating at the cursor
+- **Live-resizable window** — drag edges or corners; size persists across launches
+- **Search** — filters previews and full text as you type
+- **Text and images** — PNGs are saved to Application Support
+- **Preview panel** — full content side-by-side; flips to the left at screen edges
+- **Pin and expire** — pinned items stay; unpinned items capped by count and age
+- **Privacy filter** — skips password manager pasteboards and user-excluded apps
+- **Native appearance** — System, Light, and Dark follow macOS `NSAppearance`
+- **Launch at login** — `SMAppService` on macOS 13+, `LaunchAgents` on older
+- **Fully local** — no network requests, no telemetry, no analytics
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### Built With
 
-* [![React Native macOS][rn-macos-badge]][rn-macos-url]
-* [![Swift][swift-badge]][swift-url]
-* [![TypeScript][typescript-badge]][typescript-url]
-* [![SQLite][sqlite-badge]][sqlite-url]
-* [![Zustand][zustand-badge]][zustand-url]
-* [![CocoaPods][cocoapods-badge]][cocoapods-url]
-* [![Jest][jest-badge]][jest-url]
+- [React Native macOS](https://github.com/microsoft/react-native-macos)
+- [Swift](https://swift.org) / AppKit
+- [SQLite](https://www.sqlite.org)
+- [Zustand](https://github.com/pmndrs/zustand)
+- [Shopify FlashList](https://github.com/Shopify/flash-list)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-<!-- GETTING STARTED -->
-## Getting Started
+---
 
-To run or build Pastey locally, follow these steps.
+<!-- INSTALLATION -->
+## Installation
 
-### Prerequisites
+### System Requirements
 
-Ensure you have the following installed on your Mac:
-* **macOS** 11.0 (Big Sur) or later
-* **Xcode** 14.0 or later (with Command Line Tools: `xcode-select --install`)
-* **Node.js** 18+ & **npm**
-* **CocoaPods**:
-  ```sh
-  brew install cocoapods
-  # or
-  sudo gem install cocoapods
-  ```
+| Requirement | Details |
+| :--- | :--- |
+| Operating system | macOS 11.0 (Big Sur) or later |
+| Architecture | See the [Releases page](https://github.com/TaingJingSong/pastey/releases/latest) for the architectures each build supports |
 
-### Installation
+### Download
 
-1. **Clone the repository:**
-   ```sh
-   git clone https://github.com/your-username/pastey.git
-   cd pastey
-   ```
+Grab the latest `.dmg` from the [Releases page](https://github.com/TaingJingSong/pastey/releases/latest).
 
-2. **Install JavaScript dependencies:**
-   ```sh
-   npm install
-   ```
+1. Open the DMG and drag **Pastey** to your Applications folder.
+2. Launch it from Spotlight or Finder.
 
-3. **Install macOS native CocoaPods:**
-   ```sh
-   npm run macos:pods
-   ```
+### First-launch warning
 
-4. **Start Metro bundler (Terminal 1):**
-   ```sh
-   npm start
-   ```
+Pastey isn't signed with a paid Apple Developer certificate, so macOS will refuse to open it the first time. You'll see a dialog saying "Apple could not verify Pastey is free of malware."
 
-5. **Launch Pastey in Debug mode (Terminal 2):**
-   ```sh
-   npm run macos
-   ```
+To open it anyway:
 
-6. **Run tests:**
-   ```sh
-   npm test
-   ```
+1. Click **Done** on the warning (do not click "Move to Trash").
+2. Open **System Settings** → **Privacy & Security**.
+3. Scroll to the **Security** section.
+4. Click **Open Anyway** next to the message about Pastey.
+5. Confirm by clicking **Open**.
+
+You only need to do this once.
+
+The reason is that Apple charges $99/year for the Developer Program, which is what notarization requires. For a personal project, that's not worth the cost. If you'd rather not trust a downloaded binary, the source is right here — see [Building from Source](#building-from-source).
+
+### Verifying your download
+
+Because the app is unsigned, you may want to confirm the DMG is the one published on the Releases page. Compare its SHA-256 checksum with the value listed in the release notes:
+
+```sh
+shasum -a 256 ~/Downloads/Pastey-<version>.dmg
+```
+
+### Uninstalling
+
+1. Quit Pastey from the menu bar (right-click the status icon → **Quit**, or <kbd>⌘</kbd> <kbd>Q</kbd>).
+2. Delete **Pastey** from your Applications folder.
+3. Optional — remove your clipboard history and settings:
+
+```sh
+rm -rf ~/Library/Application\ Support/Pastey
+defaults delete com.pastey.Pastey
+```
+
+If you enabled **Launch at login** on macOS 12 or earlier, also disable it in Preferences before uninstalling so the `LaunchAgents` entry is removed.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-<!-- USAGE EXAMPLES -->
+---
+
+<!-- USAGE -->
 ## Usage
 
 ### Keyboard Shortcuts
 
 | Shortcut | Action |
 | :--- | :--- |
-| <kbd>⌘</kbd> + <kbd>Shift</kbd> + <kbd>V</kbd> | Toggle clipboard history (default global hotkey) |
-| <kbd>↓</kbd> / <kbd>↑</kbd> | Navigate items up and down |
-| <kbd>Enter ⏎</kbd> | Copy selected item to clipboard and hide window |
-| <kbd>Esc ⎋</kbd> | Close preview popup if open; otherwise dismiss Pastey |
-| <kbd>⌘</kbd> + <kbd>,</kbd> | Open Preferences / Settings window |
-| <kbd>⌘</kbd> + <kbd>W</kbd> / <kbd>Esc</kbd> | Close Preferences window |
-| <kbd>⌘</kbd> + <kbd>Q</kbd> | Quit Pastey |
+| <kbd>⌘</kbd> <kbd>⇧</kbd> <kbd>V</kbd> | Toggle history (default global hotkey) |
+| <kbd>↑</kbd> / <kbd>↓</kbd> | Move selection up and down |
+| <kbd>⏎</kbd> | Copy selected item and hide |
+| <kbd>⎋</kbd> | Close preview panel, or dismiss Pastey |
+| <kbd>⌘</kbd> <kbd>,</kbd> | Open Preferences |
+| <kbd>⌘</kbd> <kbd>W</kbd> | Close Preferences |
+| <kbd>⌘</kbd> <kbd>Q</kbd> | Quit Pastey |
 
 ### Presentation Modes
 
-* **Menu Bar Popover**: Anchored to the status icon in your menu bar. Click the menu icon or press the hotkey to view. Right-click the status icon for quick actions (Toggle, Preferences, Quit).
-* **Mouse Cursor Panel**: Toggle Pastey right at your current cursor position on any display. Configure this under **Preferences > Show history at > Mouse position**.
+Pastey can show up in two places, switchable under **Preferences → Show history at**:
 
-### Auxiliary Preview Window
+- **Menu bar** — a popover anchored to the status icon. This is the default. Right-click the status icon for Show, Preferences, and Quit.
+- **Mouse position** — a floating panel that appears near the cursor, constrained to the active display.
 
-* Click the `>` arrow button on any item or hover over an item for **2 seconds** to pop out the auxiliary preview panel.
-* Displays full content, character/line counts, created timestamp, or full-scale images.
-* Automatically flips to the left side if the screen's right edge is reached.
+### Preview Panel
+
+Hovering over an item for two seconds, or clicking its `›` button, opens a side panel with the full content. Long text gets a monospaced view with line and character counts; images scale to fit. The panel flips to the left side of the history window if there's no room on the right.
 
 ### Window Resizing
 
-When in mouse position mode, drag the resize grip at the bottom-right corner or drag the right/bottom edges to adjust the window dimensions (min 320×360, max 900×1200). Reset to default (420×520) anytime from Preferences.
+In mouse-position mode, drag the panel's edges or corners to resize (min 320×360, max 900×1200). The size is remembered across launches. Reset to the default 420×520 from Preferences.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-<!-- DATA STORAGE & PRIVACY -->
-## Data Storage & Privacy
+---
 
-Pastey is built with privacy and offline reliability as core priorities:
+<!-- DATA AND PRIVACY -->
+## Data and Privacy
 
-* **Local Storage**: All clips and database records remain strictly on your Mac.
-  * SQLite Database: `~/Library/Application Support/Pastey/pastey.db`
-  * Images Directory: `~/Library/Application Support/Pastey/images/`
-  * Settings: `NSUserDefaults` (`com.pastey.Pastey`)
-* **Zero Telemetry**: No network requests, analytics, or background tracking.
-* **Sensitive Types Suppressed**: Automatically excludes pasteboard types `org.nspasteboard.ConcealedType`, `TransientType`, and `AutoGeneratedType` (e.g., password managers).
-* **App Exclusion**: Add sensitive app bundle IDs (e.g., `com.apple.keychainaccess`) in Preferences to prevent Pastey from capturing their copies.
+Everything stays on your Mac. No network requests, no telemetry, no analytics.
+
+| What | Where |
+| :--- | :--- |
+| Database | `~/Library/Application Support/Pastey/pastey.db` |
+| Images | `~/Library/Application Support/Pastey/images/` |
+| Settings | `NSUserDefaults` under `com.pastey.Pastey` |
+
+Pastey checks the pasteboard for three markers before saving a copy: `org.nspasteboard.ConcealedType`, `org.nspasteboard.TransientType`, and `org.nspasteboard.AutoGeneratedType`. Password managers set these, so their clipboard entries are skipped automatically. You can also add specific app bundle IDs (e.g. `com.apple.keychainaccess`) to an exclude list in Preferences.
+
+Clipboard history is stored unencrypted in the local SQLite database. Anything not flagged by the markers above, or by your exclude list, will be saved — treat the database file like any other sensitive local file.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+---
+
+<!-- ARCHITECTURE -->
+## Architecture
+
+Pastey is split along a native/JavaScript boundary: anything that must integrate tightly with macOS lives in Swift, and everything the user sees and interacts with is React Native.
+
+| Layer | Responsibility |
+| :--- | :--- |
+| **Native Swift modules** | Pasteboard watcher, global hotkey, menu bar status item, popover and floating panel, launch-at-login, `NSAppearance` sync |
+| **React Native macOS UI** | History list (FlashList), search, preview, Preferences |
+| **State** | Zustand stores |
+| **Persistence** | Embedded SQLite (WAL mode, cascade deletes); images stored as files in Application Support |
+
+The app uses a multi-root React Native setup with three roots: `Pastey` (history), `PasteySettings` (Preferences window), and `PasteyPreview` (preview panel).
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+---
+
+<!-- BUILDING FROM SOURCE -->
+## Building from Source
+
+### Prerequisites
+
+- macOS 11.0 (Big Sur) or later
+- Xcode 14 or later, with Command Line Tools installed (`xcode-select --install`)
+- Node.js 18 or later
+- CocoaPods
+
+```sh
+brew install cocoapods
+```
+
+### Setup
+
+```sh
+git clone https://github.com/TaingJingSong/pastey.git
+cd pastey
+npm install
+npm run macos:pods
+```
+
+### Running
+
+Two terminals:
+
+```sh
+# Terminal 1 — Metro bundler
+npm start
+```
+
+```sh
+# Terminal 2 — debug build
+npm run macos
+```
+
+### Tests
+
+```sh
+npm test
+```
+
+### Release Build
+
+> Maintainers only — this script commits, tags, pushes, and publishes a GitHub release.
+
+```sh
+./scripts/release.sh
+```
+
+The release script handles everything: version bump, production JS bundle, `xcodebuild` Release, DMG packaging, git commit, tag, push, and the GitHub release. Run with `--help` for flags.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+---
+
+<!-- TROUBLESHOOTING -->
+## Troubleshooting
+
+**macOS says Pastey "could not be verified" or won't open.**
+This is expected for the first launch of an unsigned app. Follow the steps in [First-launch warning](#first-launch-warning).
+
+**The global hotkey does nothing.**
+Another app may already be using ⌘⇧V. Pick one of the other presets under **Preferences**, or quit the conflicting app.
+
+**Something I copied from a password manager isn't in my history.**
+That's intentional. Pastey skips pasteboards flagged as concealed, transient, or auto-generated. See [Data and Privacy](#data-and-privacy).
+
+**I want to stop Pastey from recording a specific app.**
+Add the app's bundle ID to the exclude list under **Preferences**.
+
+**The Metro bundler or Pods fail when building from source.**
+Make sure Xcode Command Line Tools are installed, then re-run `npm install` and `npm run macos:pods`. If it still fails, [open an issue](https://github.com/TaingJingSong/pastey/issues/new?labels=bug) with your macOS, Xcode, and Node versions.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+---
 
 <!-- ROADMAP -->
 ## Roadmap
 
-- [x] Multi-root React Native macOS architecture (`Pastey`, `PasteySettings`, `PasteyPreview`)
-- [x] Global Carbon hotkey registration (<kbd>⌘⇧V</kbd>) with preset selector
-- [x] Dual presentation mode (Menu bar popover vs. mouse floating panel)
-- [x] Embedded SQLite3 driver with WAL mode and cascade deletes
-- [x] PNG image capture and local Application Support file management
-- [x] Dynamic window resizing with edge handles and dimension persistence
-- [x] Auxiliary quick preview popup with auto-collision edge flipping
-- [x] Excluded applications filter for sensitive bundle IDs
-- [x] System / Light / Dark theme synchronization with `NSAppearance`
-- [x] Launch at login via `SMAppService` and `LaunchAgents`
-- [ ] Direct quick-copy keyboard shortcuts (<kbd>⌘1</kbd> – <kbd>⌘9</kbd>)
-- [ ] Rich text / HTML clip preview formatting
-- [ ] Export / Import clipboard backup
+Done:
 
-See the [open issues](https://github.com/your-username/pastey/issues) for proposed features and active discussions.
+- [x] Menu bar accessory app with configurable global hotkey
+- [x] Menu bar popover and mouse-position panel
+- [x] Multi-root React Native architecture (`Pastey`, `PasteySettings`, `PasteyPreview`)
+- [x] Embedded SQLite with WAL mode and cascade deletes
+- [x] Image capture with local file management
+- [x] Resizable history window with persisted dimensions
+- [x] Preview panel with edge-collision handling
+- [x] Search across preview and full text
+- [x] Excluded-app filter for sensitive bundle IDs
+- [x] Theme sync with `NSAppearance`
+- [x] Launch at login via `SMAppService` and `LaunchAgents`
+- [x] Settings window with sidebar navigation and SF Symbols
+
+Planned:
+
+- [ ] Quick-copy shortcuts (⌘1 – ⌘9)
+- [ ] Rich text and HTML clip preview
+- [ ] Export and import
+
+See [open issues](https://github.com/TaingJingSong/pastey/issues) for discussion.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+---
 
 <!-- CONTRIBUTING -->
 ## Contributing
 
-Contributions make the open-source community an inspiring place to learn, collaborate, and create. Any contributions you make are **greatly appreciated**.
+Bug reports and pull requests are welcome. For larger changes, open an issue first so we can agree on the approach before you spend time on it.
 
-If you have a suggestion to improve Pastey:
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'feat: Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+1. Fork the repository
+2. Create a branch (`git checkout -b feature/thing`)
+3. Make your changes
+4. Run `npm test` and `npm run lint`
+5. Open a pull request
+
+When reporting a bug, please include your macOS version, Pastey version, and steps to reproduce. By participating in this project you agree to follow the [Code of Conduct](CODE_OF_CONDUCT.md). See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guidelines.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+---
+
+<!-- SECURITY -->
+## Security
+
+Please do **not** report security vulnerabilities in public issues. Use GitHub's [private vulnerability reporting](https://github.com/TaingJingSong/pastey/security/advisories/new) instead. See [SECURITY.md](SECURITY.md) for details and supported versions.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+---
 
 <!-- LICENSE -->
 ## License
 
-Distributed under the MIT License. See [`LICENSE`](LICENSE) for more information.
+MIT. See [LICENSE](LICENSE) for details.
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-<!-- CONTACT -->
-## Contact
-
-Pastey Project - [https://github.com/your-username/pastey](https://github.com/your-username/pastey)
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+---
 
 <!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments
 
-* [React Native macOS](https://github.com/microsoft/react-native-macos)
-* [Shopify FlashList](https://github.com/Shopify/flash-list)
-* [Zustand](https://github.com/pmndrs/zustand)
-* [Best-README-Template](https://github.com/othneildrew/Best-README-Template)
-* [Shields.io](https://shields.io)
+- [React Native macOS](https://github.com/microsoft/react-native-macos)
+- [Shopify FlashList](https://github.com/Shopify/flash-list)
+- [Zustand](https://github.com/pmndrs/zustand)
+- [Best-README-Template](https://github.com/othneildrew/Best-README-Template)
+- [Shields.io](https://shields.io)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-<!-- MARKDOWN LINKS & IMAGES -->
+<!-- MARKDOWN LINKS -->
+[release-shield]: https://img.shields.io/github/v/release/TaingJingSong/pastey?style=for-the-badge
+[release-url]: https://github.com/TaingJingSong/pastey/releases/latest
+[downloads-shield]: https://img.shields.io/github/downloads/TaingJingSong/pastey/total?style=for-the-badge
+[downloads-url]: https://github.com/TaingJingSong/pastey/releases
+[ci-shield]: https://img.shields.io/github/actions/workflow/status/TaingJingSong/pastey/ci.yml?branch=main&style=for-the-badge&label=CI
+[ci-url]: https://github.com/TaingJingSong/pastey/actions/workflows/ci.yml
 [platform-shield]: https://img.shields.io/badge/platform-macOS%2011.0%2B-000000.svg?style=for-the-badge&logo=apple&logoColor=white
 [platform-url]: https://apple.com/macos
 [rn-macos-shield]: https://img.shields.io/badge/React%20Native%20macOS-0.76.3-20232A.svg?style=for-the-badge&logo=react&logoColor=61DAFB
 [rn-macos-url]: https://github.com/microsoft/react-native-macos
-[swift-shield]: https://img.shields.io/badge/Swift-5.9-FA7343.svg?style=for-the-badge&logo=swift&logoColor=white
-[swift-url]: https://swift.org
-[sqlite-shield]: https://img.shields.io/badge/SQLite-3-003B57.svg?style=for-the-badge&logo=sqlite&logoColor=white
-[sqlite-url]: https://www.sqlite.org
-[tests-shield]: https://img.shields.io/badge/Tests-39%20Passed-44CC11.svg?style=for-the-badge
-[tests-url]: __tests__/
 [license-shield]: https://img.shields.io/badge/License-MIT-F5A623.svg?style=for-the-badge
 [license-url]: LICENSE
-
-[rn-macos-badge]: https://img.shields.io/badge/React%20Native%20macOS-20232A?style=for-the-badge&logo=react&logoColor=61DAFB
-[swift-badge]: https://img.shields.io/badge/Swift-FA7343?style=for-the-badge&logo=swift&logoColor=white
-[typescript-badge]: https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white
-[typescript-url]: https://www.typescriptlang.org/
-[sqlite-badge]: https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white
-[zustand-badge]: https://img.shields.io/badge/Zustand-443E38?style=for-the-badge&logoColor=white
-[zustand-url]: https://github.com/pmndrs/zustand
-[cocoapods-badge]: https://img.shields.io/badge/CocoaPods-EE3322?style=for-the-badge&logo=cocoapods&logoColor=white
-[cocoapods-url]: https://cocoapods.org
-[jest-badge]: https://img.shields.io/badge/Jest-C21325?style=for-the-badge&logo=jest&logoColor=white
-[jest-url]: https://jestjs.io

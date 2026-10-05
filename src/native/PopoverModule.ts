@@ -8,6 +8,13 @@ export interface KeyPayload {
   key: 'up' | 'down' | 'enter' | 'escape' | string;
 }
 
+export type PopoverKeyEvent =
+  | { key: 'down' }
+  | { key: 'up' }
+  | { key: 'enter' }
+  | { key: 'escape' }
+  | { key: 'quickPaste'; index: number };
+
 export interface ShowPayload {
   position?: 'menubar' | 'mouse' | string;
 }
