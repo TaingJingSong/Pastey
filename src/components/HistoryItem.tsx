@@ -1,8 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { ClipItem } from '../db/queries';
 import { useTheme } from '../theme';
 import { SFSymbol } from './SFSymbol';
+import { parseColor } from '../utils/parseColor';
+import { ColorSwatch } from './ColorSwatch';
 
 interface Props {
   item: ClipItem;
@@ -66,6 +68,11 @@ export function HistoryItem({
   const [isHovered, setIsHovered] = useState(false);
   const hoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isPinned = item.pinned === 1;
+
+  const parsedColor = useMemo(() => {
+    if (item.type !== 'text') return null;
+    return parseColor(item.preview); 
+  }, [item.type, item.preview]);
 
   useEffect(() => {
     return () => {
@@ -136,18 +143,24 @@ export function HistoryItem({
         </Text>
       )}
       <View style={styles.body}>
-        <Text
-          numberOfLines={previewLines}
-          ellipsizeMode="tail"
-          style={[
-            styles.preview,
-            { color: colors.text },
-            previewLines === 1 && styles.previewSingleLine,
-            selected && [styles.previewSelected, { color: colors.selectedText }],
-          ]}
-        >
-          {item.preview}
-        </Text>
+        <View style={styles.bodyRow}>
+          {parsedColor ? (
+            <ColorSwatch color={parsedColor} size={14} />
+          ) : null}
+          <View style={{ width: parsedColor ? 6 : 0 }} />
+            <Text
+              numberOfLines={previewLines}
+              ellipsizeMode="tail"
+              style={[
+                styles.preview,
+                { color: colors.text },
+                previewLines === 1 && styles.previewSingleLine,
+                selected && [styles.previewSelected, { color: colors.selectedText }],
+              ]}
+              >
+              {item.preview}
+            </Text>
+          </View>
       </View>
       <View style={styles.actionContainer}>
         {(isHovered || selected) && formattedTime ? (
@@ -291,5 +304,10 @@ const styles = StyleSheet.create({
     marginRight: 8,
     textAlign: 'left',
     letterSpacing: -0.3,
+  },
+  bodyRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
 });
