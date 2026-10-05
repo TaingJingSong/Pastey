@@ -9,60 +9,75 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Planned
-- Global search shortcuts and filter tags.
-- Direct keyboard shortcuts for top 9 items (<kbd>⌘</kbd> + <kbd>1-9</kbd>).
-- Audio and file clipping previews.
+Nothing yet.
 
 ---
 
-## [0.0.1] - 2026-10-02
+## [1.1.0] - 2026-10-05
 
 ### Added
-- **Core App & Lifecycle**:
-  - Native macOS menu bar accessory app (`NSApplicationActivationPolicyAccessory`) running without a Dock icon.
-  - Status item button with template icon, left-click toggle, and right-click context menu (Toggle, Preferences, Quit).
-  - Multi-root React Native architecture (`Pastey`, `PasteySettings`, `PasteyPreview`) sharing a single JS bridge and Zustand stores.
-- **Global Hotkey & Activation**:
-  - Global hotkey listener using Carbon HIToolbox (`RegisterEventHotKey`) registered to <kbd>⌘⇧V</kbd> by default.
-  - Customizable hotkey presets (<kbd>⌘⇧V</kbd>, <kbd>⌘⌥V</kbd>, <kbd>⌃⌥V</kbd>, <kbd>⌥Space</kbd>).
-- **Dual Presentation Modes**:
-  - Menu Bar Popover mode (`NSPopover`) anchored directly below the menu bar icon.
-  - Mouse Position mode (`HistoryPanel`) spawning floating vibrancy window at cursor location.
-  - Interactive window resizing in mouse mode with corner grip and edge drag handles.
-  - Window dimension persistence in `UserDefaults` (`historyWidth`, `historyHeight`).
-  - Outside click monitoring (`NSEvent` global/local) to auto-dismiss popover and panels.
-- **Clipboard Monitoring & SQLite Storage**:
-  - Background pasteboard monitor polling at 400ms intervals with change count tracking and echo suppression.
-  - Support for plain text and PNG image clips (saved in `~/Library/Application Support/Pastey/images/`).
-  - Embedded native SQLite3 module (`PasteySQLite.swift`) configured with WAL mode and foreign key constraints.
-  - Auto-pruning of unpinned items exceeding capacity (`maxItems`) or age (`maxAgeDays`), with orphaned image file cleanup.
-- **History List & Interactions**:
-  - Recycled virtualized list rendering with `@shopify/flash-list`.
-  - Configurable preview lines (1, 2, or 3 lines).
-  - Full keyboard navigation: <kbd>↓</kbd> / <kbd>↑</kbd> to move selection, <kbd>Enter</kbd> to copy, <kbd>Esc</kbd> to dismiss.
-  - Item pinning (`★`), click-to-copy, and long-press to delete.
-  - Clear history modal with selective clearing (unpinned only vs. all items).
-- **Instant Search**:
-  - Debounced search bar (150ms) querying both preview and full text via SQLite `LIKE`.
-  - Clear button and keyboard navigation passthrough.
-- **Auxiliary Quick Preview Window**:
-  - Floating utility panel (`PasteyPreview`) displaying full text or full image.
-  - Triggered via preview button (`>`) or 2-second hover over history items.
-  - Smart collision positioning adjacent to main window with edge-flipping logic.
-- **Preferences & Settings Window**:
-  - Independent Preferences window (`PasteySettings`) accessible via <kbd>⌘,</kbd>, menu, or search bar button.
-  - Theme switching: System, Light, and Dark mode with live `NSAppearance` sync.
-  - Launch at Login toggle using `SMAppService` (macOS 13+) and `LaunchAgents` plist fallback.
-  - Max history items limit configuration (clamped 1–100,000).
-  - Excluded applications manager to ignore copies by bundle ID.
-  - Mouse window size reset button.
-- **Testing & Release Tooling**:
-  - 39 Jest unit and integration tests for components, stores, and bridge behavior.
-  - Automated release script (`scripts/build-release.sh`) to bundle, compile, and install `Pastey.app` to `/Applications`.
-  - Vector icon asset generator script (`scripts/generate-icon.swift`).
+
+- **Settings redesign** — sidebar navigation with six sections (General, Appearance, History, Shortcuts, Privacy, About), replacing the single-page scroll layout.
+- **SF Symbols support** — native Swift component rendering Apple's system iconography throughout the UI, replacing Unicode glyphs in the history list, preview header, search bar, and settings sidebar.
+- **Quick-paste shortcuts** — <kbd>⌘</kbd> <kbd>1</kbd> through <kbd>⌘</kbd> <kbd>9</kbd> copy the first nine visible items without a mouse. A `⌘1`–`⌘9` badge appears on the left of the first nine rows for discoverability.
+- **Auto-paste** — optionally synthesize <kbd>⌘</kbd> <kbd>V</kbd> into the frontmost app after copying, eliminating the manual paste step. Requires macOS Accessibility permission; configurable delay. Falls back to copy-only silently when permission is denied.
+- **Image format expansion** — capture and restore JPEG, HEIC, GIF, WebP, and TIFF in addition to PNG, preserving the original format on round-trip.
+- **Color swatch preview** — hex (`#RGB`, `#RRGGBB`, with alpha), `rgb()` / `rgba()`, and `hsl()` / `hsla()` clips render a small color chip in the history list. The parser is strict: CSS snippets like `color: #fff;` do not match.
+- **Auto-expire setting** — configurable maximum age (`maxAgeDays`) for unpinned items, applied at launch. Complements the existing `maxItems` cap.
+- **Image capture controls** — toggle image capture on/off, and set a maximum file size in MB.
+- **Clear history** action available directly from the History settings section.
+- **Reset all settings** action in the About section, including re-registration of the default hotkey.
+- **Menu bar Quit** — right-click the status icon for a Show / Preferences / Quit context menu.
+
+### Changed
+
+- **Preview panel** now uses native `NSVisualEffectView` vibrancy, content-aware dynamic height, and a 120ms fade-in, matching the visual language of the history panel.
+- **History panel** materials, corner radius, separators, and icon set refined for a more native macOS look.
+- **Settings window** resized to 720×520 (min 640×460) and made resizable.
+- **Shortcut persistence** writes are now batched with `Promise.all` instead of serialized.
+- **Release pipeline** (`scripts/release.sh`) now handles version bump, production bundling, Release build, DMG packaging, git commit, tag, push, and GitHub release in one command, with `--dry-run`, `--no-push`, and `--skip-build` flags.
+
+### Fixed
+
+- **Image durability** — images are stored in `~/Library/Application Support/Pastey/images/` instead of `NSTemporaryDirectory()`, which macOS may purge under memory pressure.
+- **Orphaned image cleanup** — `syncImages` sweeps the image directory on prune regardless of image format, self-healing orphans created by `deleteClip` or `clearAll`.
+- **Echo suppression** — the last change count is set after a self-initiated pasteboard write, preventing re-insertion of items the user just pasted.
+- **SQLite module stability** — `RCTPromiseResolveBlock` signatures, `withCString` for all text binding, and JSON-string payloads to work around a bridgeless-mode serialization bug in the macOS fork.
+
+### Removed
+
+- Dead `macos/Pastey-macOS/NativeModules/` directory that duplicated the real Swift files and risked being edited by mistake.
 
 ### Security
-- Automatic suppression of sensitive pasteboards (ignoring `org.nspasteboard.ConcealedType`, `TransientType`, and `AutoGeneratedType`).
-- Excluded Applications filter preventing capture from password managers (e.g. 1Password, Bitwarden, Keychain).
-- 100% offline, local-only SQLite storage with zero network telemetry or tracking.
+
+- **Auto-paste permission model** — the Accessibility permission is only requested when the user enables auto-paste. No automatic permission prompts at launch.
+
+---
+
+## [1.0.0] - 2026-10-02
+
+### Added
+
+- **Core app and lifecycle** — native macOS menu bar accessory app (`NSApplicationActivationPolicyAccessory`) running without a Dock icon. Status item with template icon, left-click toggle, right-click context menu.
+- **Multi-root React Native architecture** — `Pastey` (history), `PasteySettings` (preferences), `PasteyPreview` (preview panel), sharing a single JS bridge and Zustand stores.
+- **Global hotkey** — Carbon `RegisterEventHotKey` bound to <kbd>⌘</kbd> <kbd>⇧</kbd> <kbd>V</kbd> by default. Four presets available in Preferences.
+- **Dual presentation modes** — menu bar popover (`NSPopover`) anchored to the status icon, or a mouse-positioned floating panel (`HistoryPanel`) at the cursor.
+- **Interactive window resizing** — corner grip and edge drag handles, dimensions persisted in `UserDefaults`.
+- **Clipboard monitoring** — 400ms pasteboard polling with change count tracking and echo suppression.
+- **Text and PNG image capture** — images stored in `~/Library/Application Support/Pastey/images/`.
+- **Embedded SQLite** — native driver with WAL mode and foreign key cascade deletes. Auto-pruning of unpinned items by capacity (`maxItems`) and age (`maxAgeDays`).
+- **History list** — virtualized rendering with `@shopify/flash-list`, configurable preview lines, keyboard navigation (<kbd>↑</kbd> / <kbd>↓</kbd> / <kbd>Enter</kbd> / <kbd>Esc</kbd>), pin / delete / click-to-copy.
+- **Instant search** — 150ms debounced queries against preview and full text via SQLite `LIKE`.
+- **Preview panel** — full text or full image with edge-collision positioning.
+- **Preferences window** — <kbd>⌘</kbd> <kbd>,</kbd>, theme selection (System / Light / Dark), launch at login, max items, excluded applications, window size reset.
+- **Testing** — 52 Jest unit and integration tests.
+
+### Security
+
+- Automatic suppression of sensitive pasteboards (`org.nspasteboard.ConcealedType`, `TransientType`, `AutoGeneratedType`).
+- Excluded applications filter for password managers.
+- Fully local SQLite storage; no network requests, telemetry, or analytics.
+
+[Unreleased]: https://github.com/TaingJingSong/pastey/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/TaingJingSong/pastey/compare/v1.0.0...v1.1.0
+[1.0.0]: https://github.com/TaingJingSong/pastey/releases/tag/v1.0.0
