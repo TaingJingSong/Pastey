@@ -103,7 +103,9 @@ class ClipboardMonitor: RCTEventEmitter {
 
       if type == "image", !filePath.isEmpty,
         let data = try? Data(contentsOf: URL(fileURLWithPath: filePath)) {
-        pb.setData(data, forType: .png)
+        let ext = (filePath as NSString).pathExtension.lowercased()
+        let pbType = pasteboardType(forExtension: ext) ?? .png
+        pb.setData(data, forType: pbType)
       } else if !content.isEmpty {
         pb.setString(content, forType: .string)
       } else {
@@ -141,11 +143,12 @@ class ClipboardMonitor: RCTEventEmitter {
       ]
     }
 
-    if let data = pb.data(forType: .png) {
+    if let rep = bestImageRep(pb) {
       let captureImages = UserDefaults.standard.object(forKey: "captureImages") as? Bool ?? true
       guard captureImages else { return nil }
+
       let maxMb = UserDefaults.standard.object(forKey: "maxImageMb") as? Double ?? 10.0
-      if Double(data.count) > maxMb * 1024 * 1024 {
+      if Double(rep.data.count) > maxMb * 1024 * 1024 {
         return nil
       }
 
@@ -154,11 +157,11 @@ class ClipboardMonitor: RCTEventEmitter {
         atPath: dir,
         withIntermediateDirectories: true
       )
-      let path = dir + "\(UUID().uuidString).png"
+      let path = dir + "\(UUID().uuidString).\(rep.ext)"
       do {
-        try data.write(to: URL(fileURLWithPath: path))
+        try rep.data.write(to: URL(fileURLWithPath: path))
         return [
-          "hash": sha256(data.base64EncodedString()),
+          "hash": sha256(rep.data.base64EncodedString()),
           "type": "image",
           "preview": "[image]",
           "content": "",
@@ -172,5 +175,38 @@ class ClipboardMonitor: RCTEventEmitter {
     }
 
     return nil
+  }
+
+  private func bestImageRep(
+    _ pb: NSPasteboard
+  ) -> (data: Data, ext: String, uti: String)? {
+    let candidates: [(NSPasteboard.PasteboardType, String, String)] = [
+      (.init("public.jpeg"), "jpg", "public.jpeg"),
+      (.init("public.png"),  "png", "public.png"),
+      (.init("public.heic"), "heic", "public.heic"),
+      (.init("com.compuserve.gif"), "gif", "com.compuserve.gif"),
+      (.init("org.webmproject.webp"), "webp", "org.webmproject.webp"),
+      (.init("public.tiff"), "tiff", "public.tiff"),
+    ]
+    for (pbType, ext, uti) in candidates {
+      if let data = pb.data(forType: pbType) {
+        return (data, ext, uti)
+      }
+    }
+    return nil
+  }
+
+  private func pasteboardType(
+    forExtension ext: String
+  ) -> NSPasteboard.PasteboardType? {
+    switch ext {
+    case "jpg", "jpeg": return .init("public.jpeg")
+    case "png":         return .init("public.png")
+    case "heic":        return .init("public.heic")
+    case "gif":         return .init("com.compuserve.gif")
+    case "webp":        return .init("org.webmproject.webp")
+    case "tiff", "tif": return .init("public.tiff")
+    default:            return nil
+    }
   }
 }
